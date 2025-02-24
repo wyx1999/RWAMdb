@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Map echarts</title>
+                <script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
+            <script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/maps/china.js"></script>
+
+
+</head>
+<body >
+    <div id="box" class="chart-container" style="width:100%; height:1500px; "></div>
+    <script>
+        data = [[102.6116, 33.112, 'Marsh'], [95.793611, 37.756667, 'River'], [117.453889, 38.896389, 'River'], [119.239722, 37.725833, 'Coastal'], [110.293889, 34.608889, 'River'], [113.652778, 34.910556, 'River'], [121.966667, 31.502778, 'Marsh'], [101.889444, 33.648611, 'Marsh'], [103.65, 36.45, 'Marsh'], [111.003333, 21.495, 'Coastal'], [109.666667, 23.083333, 'Marsh'], [122.592222, 43.291389, 'Marsh'], [121.783611, 40.923333, 'Marsh'], [123.625833, 45.941667, 'Marsh'], [125.4875, 42.9756, 'Paddy'], [123.2827, 41.615, 'Paddy'], [110.55, 19.9, 'Paddy'], [109.45, 18.316667, 'Paddy'], [113.421667, 22.851389, 'Paddy'], [111.021111, 21.557778, 'Paddy'], [117.743333, 31.6475, 'Paddy'], [116.676389, 29.098889, 'Paddy'], [115.9892, 38.974444, 'Paddy'], [122.0194, 40.95, 'Paddy'], [128.4256, 43.4256, 'Paddy'], [107.2689, 29.9192, 'Lake'], [120.216111, 30.1475, 'Lake'], [111.1856, 30.7722, 'River'], [100.223, 25.7257, 'Lake'], [116.6725, 29.147778, 'Lake'], [113.096944, 29.346389, 'Lake'], [117.36078, 31.67204, 'Lake'], [120.1704, 31.3307, 'Lake']]
+		 const colorMap = {
+
+			'Lake': '#2c4ca0',
+			'River': '#75b5dc',
+			'Paddy': '#a0d292',
+            'Marsh': '#376439',
+			'Coastal': '#c44438',
+		};
+		const scatterData = data.map(item => ({
+			name: item[2],
+			value: [item[0], item[1]],
+			itemStyle: {
+				color: colorMap[item[2]]  // 根据类型设置颜色
+			}
+		}));
+		console.log(scatterData);
+
+        var myEcharts = echarts.init(document.getElementById("box"));
+        var option = {
+			toolbox: {
+				show: true,
+				  left: 'center',
+					top: 'top',
+				feature: {
+				  saveAsImage: {type: "png", pixelRatio: 2,}
+				},
+				itemSize: 20
+			},		geo: {  // 添加geo配置
+        map: 'china',
+        roam: true,
+        itemStyle: {
+            areaColor: '#f3f3f3',  // 地区背景颜色
+            borderColor: '#999'   // 边界颜色
+        }
+    },
+            series: [
+                {
+                    name: 'mapper',
+                    type: 'map',
+                    map: 'china',
+                    roam: true,
+                },
+				{
+					name: 'marker',
+					type: 'scatter',  // 散点图层
+					coordinateSystem: 'geo',  // 关联地理坐标系
+					symbol: 'circle',
+					symbolSize: 16,
+					data: scatterData,
+					itemStyle: {
+						color: params => params.data.itemStyle.color  // 使用预定义颜色
+					},
+					tooltip: {
+						formatter: params => `${params.data.value[0]}, ${params.data.value[1]}<br/>类型：${params.data.name}`
+					}
+				}
+            ]
+        };
+
+        myEcharts.setOption(option);
+    </script>
+
+</body>
+</html>
