@@ -1,0 +1,442 @@
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - {{ site.id }} Page</title>
+<link rel="stylesheet" href="{% static 'db/css/viewer.min.css' %}">
+{% endblock title %}
+
+{% block content %}
+<div class="modal fade" id="resultModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="resultLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="resultLabel" style="width: 90%;"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" >
+          <table class="table table-bordered table-hover mt-1">
+            <thead>
+                <tr style="white-space: nowrap;">
+                  <th >ID</th><th >Sample</th><th >Site</th>
+                  <th >Taxonomy</th><th >Relative abundance</th><th >Length</th><th >RPKM</th>
+                  <th >Completeness</th><th >Contamination</th><th >GC</th><th >N50</th>
+                </tr>
+            </thead>
+            <tbody id="result_body">
+
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container font-nom"  style="min-height:400px;padding: 10px 30px;">
+    <div class="row">
+        <div class="col-lg-10 col-xs-12" >
+            <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+                <h1 class="h1_title" >Site Report Card</h1>
+                <hr id="section_0">
+                <div id="section_1" class="section" style="padding-top:0;">
+                    <div class="row">
+                    <div class="col-lg-7 col-sm-12">
+                        <h2 class="h2_title">Overview</h2>
+                        <table class="table table-bordered mt-1">
+                            <tbody>
+                                <tr><th class="sample_td" >ID</th>               <td >{{ site.id }}</td></tr>
+                                <tr><th class="sample_td">Name</th>             <td >{{ site.name }}</td></tr>
+                                <tr><th class="sample_td">Chinese</th>             <td >{{ site.chinese }}</td></tr>
+
+                                <tr><th class="sample_td">Longitude and latitude</th>           <td><span id="longitude">{{ site.longitude }}</span>, <span id="latitude">{{ site.latitude }}</span></td></tr>
+
+                                <tr><th class="sample_td">Altitude</th>           <td>{{ site.altitude }} m</td></tr>
+                                <tr><th class="sample_td">Annual temperature (1991-2022)</th>  <td>{{ site.temperature }} &deg;C</td></tr>
+                                <tr><th class="sample_td">Annual precipitation (1991-2022)</th>         <td>{{ site.precipitation }} mm</td></tr>
+                                <tr><th class="sample_td">Annual temperature (2022)</th>  <td>{{ site.temperature_2022 }} &deg;C</td></tr>
+                                <tr><th class="sample_td">Annual precipitation (2022)</th>         <td>{{ site.precipitation_2022 }} mm</td></tr>
+                                <tr><th class="sample_td">Type</th>           <td>{{ site.type }}</td></tr>
+                                <tr><th colspan="2" style="background-color: #f1f1f1;font-size: 18px;line-height: 45px;text-align: center;">Geographical location and surrounding environments</th></tr>
+                                <tr><th class="sample_td">Administrative area</th>             <td >{{ site.location }}</td></tr>
+                                <tr><th class="sample_td">Introduction</th>             <td >{{ site.introduction }}</td></tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-5 col-sm-12" style="padding-top: 80px;min-height:400px;">
+                        <div style="position:relative;width: 100%;height: 100%;">
+                        <div id="map_div" style=" width: 100%;height:100%;"></div>
+                        <div class="input-title"><p style="margin-bottom:5px;">Location</p></div>
+                        </div>
+                    </div>
+                    </div>
+
+                </div>
+                {% if imgs %}
+                <div id="section_2" class="section mt-5" >
+                    <h2 class="h2_title">Gallery</h2>
+                    <div id="gallery" class="gallery">
+                        <div class="row">
+                        {% for img in imgs %}
+                            <div class="gallery-item">
+                                <img src="{% static 'db/gallery/' %}{{ site.id }}/{{ img.name }}" class="gallery-img" alt="{{ img.name }}" onclick="viewImage(this)">
+                                <div class="img-caption">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">By: {{ img.person }}</li>
+                                        <li class="list-group-item">Date: {{ img.date }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                    <div id="gallery" class="gallery"></div>
+                {% endif %}
+                <div id="section_3" class="section mt-5" >
+                    <h2 class="sample_big_title">Sankey<span style="font-size: 16px;color: #000;"><br>The taxonomic associations of MAGs across samples within the {{ site.id }}.</span></h2>
+
+                    <div id="outer_div"  style="height: 1210px;width:100%;overflow: auto;position: relative;">
+
+                        <div id="sankey_container" style="width:100%;height: 1200px;min-width: 1500px;" ></div>
+                    </div>
+
+                </div>
+                <div id="section_4" class="section mb-5 mt-5" >
+                    <h2 class="sample_big_title">Samples<span class="browse_num">{{ samples|length }}</span><span style="font-size: 16px;color: #000;"><br>The samples in {{ site.id }}</span></h2>
+                    <div style="max-height:70vh; overflow: auto;">
+                        <table class="table table-bordered table-hover mt-1">
+                            <thead>
+                                <tr>
+                                    <th class="sample_td">Sample ID</th>
+
+                                    <th class="sample_td">Total C</th>
+                                    <th class="sample_td">Total phosphorus</th>
+                                    <th class="sample_td">Total nitrogen</th>
+                                    <th class="sample_td">Total sulfur</th>
+                                    <th class="sample_td">SOC</th>
+                                    <th class="sample_td">C/N</th>
+                                    <th class="sample_td">IC</th>
+                                    <th class="sample_td">MBC</th>
+                                     <th class="sample_td">moisture content</th>
+                                    <th class="sample_td">NO<sub>3</sub><sup>-</sup></th>
+                                    <th class="sample_td">NH<sub>4</sub><sup>+</sup></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for sample in samples %}
+                            <tr>
+                                <td class="sample_td"><a class="project_sample_a" href="{% url 'db:sample' sample.id %}">{{ sample.id }}</a></td>
+
+                                <td class="sample_td">{{ sample.TC }}</td>
+                                <td class="sample_td">{{ sample.TP }}</td>
+                                <td class="sample_td">{{ sample.TN }}</td>
+                                <td class="sample_td">{{ sample.TS }}</td>
+                                <td class="sample_td">{{ sample.SOC }}</td>
+                                <td class="sample_td">{{ sample.C_N }}</td>
+                                <td class="sample_td">{{ sample.IC }}</td>
+                                <td class="sample_td">{{ sample.MBC }}</td>
+                                <td class="sample_td">{{ sample.water }}</td>
+                                <td class="sample_td">{{ sample.NO3|default_if_none:"" }}</td>
+                                <td class="sample_td">{{ sample.NH4 }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-2 d-none d-lg-block pt-4 mt-5 mx-auto" style="padding-right: 0">
+            <div class="slide_div">
+                <div id="list-example" class="list-group">
+                  <a class="list-group-item list-group-item-action" href="#section_1">Overview</a>
+                  {% if imgs %}
+                  <a class="list-group-item list-group-item-action" href="#section_2">Gallery</a>{% endif %}
+                  <a class="list-group-item list-group-item-action" href="#section_3">Sankey</a>
+                  <a class="list-group-item list-group-item-action" href="#section_4">Samples</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script src="{% static 'db/js/viewer.min.js' %}"></script>
+<script>
+$(function () {
+
+    gallery = new Viewer(document.getElementById('gallery'), {
+        url: 'src', // 使用图片的 src 属性作为来源
+        filter: function (image) {
+            // 只允许具有 "viewer-item" 类名的图片进入 Viewer
+            return image.classList.contains('gallery-img');
+        }
+    });
+
+    waitForAMap();
+    show_sankey();
+})
+
+function show_sankey(){
+    let sankey_dom = document.getElementById('sankey_container');
+
+    let sankey_Chart = echarts.init(sankey_dom, null, {
+        renderer: 'canvas',
+        useDirtyRect: false
+    });
+    let site_id =  '{{ site.id }}';
+    let sankey_option;
+    $.get(`/static/db/sankey/{{ site.id }}.json`, function (data) {
+        const len = data.nodes.length;
+        $('#sankey_container').height(len*6);
+        $('#outer_div').height(len*6+10);
+      sankey_Chart.hideLoading();
+      sankey_Chart.setOption(
+        (sankey_option = {
+              toolbox: {
+                show: true,
+                  left: 0, // 设置 toolbox 水平居中
+                    top: 'top', // 设置 toolbox 在顶部
+                feature: {
+                  saveAsImage: {type: "png", name: '{{ site.id }} MAGs',pixelRatio: 2,}
+                },
+                  itemSize: 20
+              },
+              tooltip: {
+                trigger: 'item',
+                triggerOn: 'mousemove'
+              },
+              series: [
+                {
+                  type: 'sankey',
+
+                  data: data.nodes,
+                  links: data.links,
+                  emphasis: {
+                    focus: 'adjacency'
+                  },
+
+                  levels: [
+                    {
+                      depth: 0,
+                      itemStyle: {
+                        color: '#fbb4ae'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    },
+                    {
+                      depth: 1,
+                      itemStyle: {
+                        color: '#b3cde3'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    },
+                    {
+                      depth: 2,
+                      itemStyle: {
+                        color: '#ccebc5'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    },
+                    {
+                      depth: 3,
+                      itemStyle: {
+                        color: '#decbe4'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    },
+                    {
+                      depth: 4,
+                      itemStyle: {
+                        color: '#73c0de'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    },
+                    {
+                      depth: 5,
+                      itemStyle: {
+                        color: '#f0e79d'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    },
+                    {
+                      depth: 6,
+                      itemStyle: {
+                        color: '#ecd9ca'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    },
+                    {
+                      depth: 7,
+                      itemStyle: {
+                        color: '#ffb3de'
+                      },
+                      lineStyle: {
+                        color: 'source',
+                        opacity: 0.6
+                      }
+                    }
+                  ],
+
+                  lineStyle: {
+                    curveness: 0.6
+                  }
+                }
+              ]
+
+
+
+        })
+      );
+        sankey_Chart.resize();
+    });
+    function findFullPath(target, links) {
+        let path = [];
+        function traverse(node) {
+            let foundLink = links.find(link => link.target === node);
+            if (foundLink) {
+                traverse(foundLink.source);
+                path.push(foundLink.source);
+            }
+        }
+        traverse(target);
+        return path;
+    }
+
+    // 监听 `click` 事件
+    sankey_Chart.on('click', function (params) {
+        $(".loading").show();
+        let fullPath, taxname, resultLabel;
+
+        if (params.dataType === 'edge') {
+            let source = params.data.source;
+            let target = params.data.target;
+
+            taxname = findFullPath(source, sankey_option.series[0].links);
+            taxname.push(source, target); // 最终路径加上目标节点
+            fullPath = 'edge$'+taxname.join('$');
+            resultLabel = source + ' <--> ' + target + ' in ' + site_id
+         }else if (params.dataType === 'node'){
+
+            let source = params.data.name;
+            taxname = findFullPath(source, sankey_option.series[0].links);
+            taxname.push(source); // 最终路径加上目标节点
+            fullPath = 'node$'+taxname.join('$');
+            resultLabel = source+ ' in ' + site_id
+        }
+        $.post("/db/browse_search/",
+            {
+                'fullPath':fullPath,
+            },function(data){
+
+                let html =  ``;
+                data.result.forEach(item => {
+                    html += `<tr>
+                        <td ><a class="table_a" href="/db/bin/${item.id}/" target="_blank">${item.id}</a></td>
+                        <td ><a class="table_a" href="/db/sample/${item.sample}/" target="_blank">${item.sample}</a></td>
+                        <td ><a class="table_a" href="/db/site/${item.site}/" target="_blank">${item.site}</a></td>
+                        <td >${item.taxonomy}</td>
+                        <td >${item.relative_abundance}</td>
+                        <td >${item.length}</td>
+                        <td >${item.RPKM}</td>
+                        <td >${item.Completeness}</td>
+                        <td >${item.Contamination}</td>
+                        <td >${item.GC}</td>
+                        <td >${item.N50}</td>
+
+                    </tr>`;
+                })
+
+                $('#result_body').html(html);
+                $('#resultLabel').html(resultLabel);
+                $('#resultModel').modal('show');
+                $(".loading").hide();
+            })
+    });
+    sankey_Chart.resize();
+    window.addEventListener('resize', sankey_Chart.resize);
+}
+
+function viewImage(img) {
+    const index = Array.from(document.querySelectorAll('.gallery-img')).indexOf(img);
+    if (index >= 0) {
+        gallery.view(index); // 进入对应图片的查看模式
+    }
+}
+function waitForAMap() {
+    let map;
+    if (typeof AMap !== 'undefined') {
+        $(".loading").hide();
+        let infoWindow = new AMap.InfoWindow({offset: new AMap.Pixel(-1, -6)});
+        let latitude = $('#latitude').text();
+        let longitude = $('#longitude').text();
+        map = new AMap.Map('map_div', {
+            lang: "en",
+            viewMode: '2D',
+            zoom: 12,
+            resizeEnable: true,
+            center: [longitude, latitude],
+        });
+        const scaleControl = new AMap.Scale({
+            position: 'LB' // 设置位置：左下角 (Left Bottom)
+        });
+        map.addControl(scaleControl);
+        var markerContent = '<div class="marker marker_active" ></div>';
+        let m = new AMap.Marker({
+            map: map,
+            content: markerContent,
+            position: [longitude, latitude],
+            offset: new AMap.Pixel(-6, -6),
+        });
+
+        let sss = '';
+        $('.project_sample_a').each(function () {
+            sss += '<p style="margin-bottom: 5px;">' + $(this).text() + '</p>';
+        });
+
+        m.content = `<div class="infoWindow"><h4>{{ site.id }}</h4><hr><table class="table table-borderless mb-0"><tbody>
+        <tr><th>Name: <th><td>{{ site.name }}</td></tr>
+        <tr><th>Location: <th><td>{{ site.location }}</td></tr>
+        <tr><th>Sample: <th><td>` + sss + `</td></tr></tbody></table>`;
+
+        m.on('mouseover', function (e) {
+            infoWindow.setContent(e.target.content);
+            infoWindow.open(map, e.target.getPosition());
+        });
+        m.on('mouseout', function (e) {
+            infoWindow.close();
+        });
+
+        console.log('Map load success');
+    } else {
+        // 如果 AMap 未定义，稍后重试
+        setTimeout(waitForAMap, 100);
+    }
+}
+
+</script>
+{% endblock js %}
+

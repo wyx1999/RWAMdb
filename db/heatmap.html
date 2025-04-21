@@ -1,0 +1,905 @@
+
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - Heatmap</title>
+{% endblock title %}
+
+{% block content %}
+
+<div class="container mt-5 font-nom mb-5">
+    <div class="row ">
+        <div class="col-12 col-lg-3 mt-5 mb-5">
+
+          <div style="position: relative;border: 1px solid #dee2e6;padding: 10px;margin-bottom: 50px;">
+              <div class="parallelogram"><h6 >Expression type</h6></div>
+                <div class="card card-body" style="border: 0">
+
+                  <p class="menu_p">
+                      <label  for="gene">Percentage of genes</label>
+                      <input class="menu_checkbox" name="Expression" style="float: right;" type="radio" id="gene" value="genes_percentage" >
+                  </p>
+                  <p class="menu_p">
+                      <label  for="step">Percentage of steps</label>
+                      <input class="menu_checkbox" name="Expression"  style="float: right;" type="radio" id="step" value="steps_percentage" checked>
+                  </p>
+               </div>
+
+
+          </div>
+          <div style="position: relative;border: 1px solid #dee2e6;padding: 10px;">
+              <div class="parallelogram"><h6 >Input data</h6></div>
+               <textarea class=" blast_textarea" rows="28" id="mag_ids_textarea" name="mag_ids_textarea"  placeholder="Input MAG IDs (Limit: 500)"></textarea>
+          </div>
+          <div  style="border: 1px solid #dee2e6;padding: 5px;">
+              <div class="input-group mb-0" style="height: 38px;">
+                  <span class="input-group-text" >Minimum</span>
+                  <input style="height:100%;" id="min" type="color" class="form-control" value="#ffffff" aria-label="min" aria-describedby="min">
+                  <span class="input-group-text" >Median</span>
+                  <input style="height:100%;" id="mid" type="color" class="form-control" value="#87a6c0" aria-label="mid" aria-describedby="mid">
+                  <span class="input-group-text" >Maximum</span>
+                  <input style="height:100%;" id="max" type="color" class="form-control" value="#0F4C81" aria-label="max" aria-describedby="max">
+                </div>
+          </div>
+          <div  style="display:flex;justify-content: space-between;border: 1px solid #dee2e6;padding: 5px;">
+              <div>
+                <button type="button" class="btn custom-btn rectangle" style="background-color: #007b43;" onclick="$('#BatchLabelModel').modal('show');">Batch Import</button>
+                <button type="button" class="btn custom-btn rectangle" onclick="example();">Example</button>
+              </div>
+            <button type="button" class="btn custom-btn rectangle" onclick="do_heatmap();">Submit</button>
+          </div>
+        </div>
+        <div class="col-12 col-lg-9" >
+            <div class="heatmap_container" style="overflow: auto;height: 1055px;width: 100%;">
+            <div id="heatmap_container" style="min-height: 1055px;min-width: 1500px;width: 99%;"></div></div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="BatchLabelModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="BatchLabel" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="BatchLabel">Batch Import MAGs</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+            <div class="menu_div">
+                <div class="menu_p" style="display: flex;align-items: center;justify-content: space-between;">
+                  <div>
+                      <button class="menu_btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSite" aria-expanded="false" aria-controls="collapseSite" onclick="collapse_toggle(this)">
+                        <i class="bi bi-chevron-down"></i>
+                      </button>
+                      <span class="menu_title">By Site</span>
+                  </div>
+                </div>
+                <div class="collapse show" id="collapseSite" >
+                  <div class="card card-body">
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW01" value="RW01">
+                          <label for="RW01">RW01</label>
+                          <span class="num_span">111</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW02" value="RW02">
+                          <label for="RW02">RW02</label>
+                          <span class="num_span">281</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW03" value="RW03">
+                          <label for="RW03">RW03</label>
+                          <span class="num_span">79</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW04" value="RW04">
+                          <label for="RW04">RW04</label>
+                          <span class="num_span">206</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW05" value="RW05">
+                          <label for="RW05">RW05</label>
+                          <span class="num_span">68</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW06" value="RW06">
+                          <label for="RW06">RW06</label>
+                          <span class="num_span">68</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW07" value="RW07">
+                          <label for="RW07">RW07</label>
+                          <span class="num_span">405</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW08" value="RW08">
+                          <label for="RW08">RW08</label>
+                          <span class="num_span">105</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW09" value="RW09">
+                          <label for="RW09">RW09</label>
+                          <span class="num_span">405</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW10" value="RW10">
+                          <label for="RW10">RW10</label>
+                          <span class="num_span">302</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW11" value="RW11">
+                          <label for="RW11">RW11</label>
+                          <span class="num_span">162</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW12" value="RW12">
+                          <label for="RW12">RW12</label>
+                          <span class="num_span">145</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW13" value="RW13">
+                          <label for="RW13">RW13</label>
+                          <span class="num_span">250</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW14" value="RW14">
+                          <label for="RW14">RW14</label>
+                          <span class="num_span">315</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW15" value="RW15">
+                          <label for="RW15">RW15</label>
+                          <span class="num_span">54</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW16" value="RW16">
+                          <label for="RW16">RW16</label>
+                          <span class="num_span">203</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW17" value="RW17">
+                          <label for="RW17">RW17</label>
+                          <span class="num_span">270</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW18" value="RW18">
+                          <label for="RW18">RW18</label>
+                          <span class="num_span">197</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW19" value="RW19">
+                          <label for="RW19">RW19</label>
+                          <span class="num_span">190</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW20" value="RW20">
+                          <label for="RW20">RW20</label>
+                          <span class="num_span">115</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW21" value="RW21">
+                          <label for="RW21">RW21</label>
+                          <span class="num_span">140</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW22" value="RW22">
+                          <label for="RW22">RW22</label>
+                          <span class="num_span">104</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW23" value="RW23">
+                          <label for="RW23">RW23</label>
+                          <span class="num_span">206</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW24" value="RW24">
+                          <label for="RW24">RW24</label>
+                          <span class="num_span">157</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW25" value="RW25">
+                          <label for="RW25">RW25</label>
+                          <span class="num_span">65</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW26" value="RW26">
+                          <label for="RW26">RW26</label>
+                          <span class="num_span">106</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW27" value="RW27">
+                          <label for="RW27">RW27</label>
+                          <span class="num_span">131</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW28" value="RW28">
+                          <label for="RW28">RW28</label>
+                          <span class="num_span">145</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW29" value="RW29">
+                          <label for="RW29">RW29</label>
+                          <span class="num_span">241</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW30" value="RW30">
+                          <label for="RW30">RW30</label>
+                          <span class="num_span">196</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW31" value="RW31">
+                          <label for="RW31">RW31</label>
+                          <span class="num_span">192</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW32" value="RW32">
+                          <label for="RW32">RW32</label>
+                          <span class="num_span">198</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="siteCheckbox" id="RW33" value="RW33">
+                          <label for="RW33">RW33</label>
+                          <span class="num_span">208</span>
+                      </p>
+
+                  </div>
+                </div>
+
+                <div class="menu_p" style="display: flex;align-items: center;justify-content: space-between;">
+                  <div>
+                      <button class="menu_btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSample" aria-expanded="false" aria-controls="collapseSample" onclick="collapse_toggle(this)">
+                        <i class="bi bi-chevron-right"></i>
+                      </button>
+                      <span class="menu_title">By Sample</span>
+                  </div>
+                </div>
+                <div class="collapse" id="collapseSample" style="">
+                  <div class="card card-body">
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS001" value="RWS001">
+                          <label for="RWS001">RWS001</label>
+                          <span class="num_span">57</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS002" value="RWS002">
+                          <label for="RWS002">RWS002</label>
+                          <span class="num_span">27</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS003" value="RWS003">
+                          <label for="RWS003">RWS003</label>
+                          <span class="num_span">27</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS004" value="RWS004">
+                          <label for="RWS004">RWS004</label>
+                          <span class="num_span">118</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS005" value="RWS005">
+                          <label for="RWS005">RWS005</label>
+                          <span class="num_span">73</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS006" value="RWS006">
+                          <label for="RWS006">RWS006</label>
+                          <span class="num_span">90</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS007" value="RWS007">
+                          <label for="RWS007">RWS007</label>
+                          <span class="num_span">29</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS008" value="RWS008">
+                          <label for="RWS008">RWS008</label>
+                          <span class="num_span">24</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS009" value="RWS009">
+                          <label for="RWS009">RWS009</label>
+                          <span class="num_span">26</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS010" value="RWS010">
+                          <label for="RWS010">RWS010</label>
+                          <span class="num_span">46</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS011" value="RWS011">
+                          <label for="RWS011">RWS011</label>
+                          <span class="num_span">36</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS012" value="RWS012">
+                          <label for="RWS012">RWS012</label>
+                          <span class="num_span">124</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS013" value="RWS013">
+                          <label for="RWS013">RWS013</label>
+                          <span class="num_span">20</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS014" value="RWS014">
+                          <label for="RWS014">RWS014</label>
+                          <span class="num_span">21</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS015" value="RWS015">
+                          <label for="RWS015">RWS015</label>
+                          <span class="num_span">27</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS016" value="RWS016">
+                          <label for="RWS016">RWS016</label>
+                          <span class="num_span">14</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS017" value="RWS017">
+                          <label for="RWS017">RWS017</label>
+                          <span class="num_span">33</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS018" value="RWS018">
+                          <label for="RWS018">RWS018</label>
+                          <span class="num_span">21</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS019" value="RWS019">
+                          <label for="RWS019">RWS019</label>
+                          <span class="num_span">156</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS020" value="RWS020">
+                          <label for="RWS020">RWS020</label>
+                          <span class="num_span">102</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS021" value="RWS021">
+                          <label for="RWS021">RWS021</label>
+                          <span class="num_span">147</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS022" value="RWS022">
+                          <label for="RWS022">RWS022</label>
+                          <span class="num_span">53</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS023" value="RWS023">
+                          <label for="RWS023">RWS023</label>
+                          <span class="num_span">38</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS024" value="RWS024">
+                          <label for="RWS024">RWS024</label>
+                          <span class="num_span">14</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS025" value="RWS025">
+                          <label for="RWS025">RWS025</label>
+                          <span class="num_span">157</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS026" value="RWS026">
+                          <label for="RWS026">RWS026</label>
+                          <span class="num_span">114</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS027" value="RWS027">
+                          <label for="RWS027">RWS027</label>
+                          <span class="num_span">134</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS028" value="RWS028">
+                          <label for="RWS028">RWS028</label>
+                          <span class="num_span">108</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS029" value="RWS029">
+                          <label for="RWS029">RWS029</label>
+                          <span class="num_span">95</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS030" value="RWS030">
+                          <label for="RWS030">RWS030</label>
+                          <span class="num_span">99</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS031" value="RWS031">
+                          <label for="RWS031">RWS031</label>
+                          <span class="num_span">84</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS032" value="RWS032">
+                          <label for="RWS032">RWS032</label>
+                          <span class="num_span">32</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS033" value="RWS033">
+                          <label for="RWS033">RWS033</label>
+                          <span class="num_span">46</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS034" value="RWS034">
+                          <label for="RWS034">RWS034</label>
+                          <span class="num_span">18</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS035" value="RWS035">
+                          <label for="RWS035">RWS035</label>
+                          <span class="num_span">71</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS036" value="RWS036">
+                          <label for="RWS036">RWS036</label>
+                          <span class="num_span">56</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS037" value="RWS037">
+                          <label for="RWS037">RWS037</label>
+                          <span class="num_span">81</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS038" value="RWS038">
+                          <label for="RWS038">RWS038</label>
+                          <span class="num_span">92</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS039" value="RWS039">
+                          <label for="RWS039">RWS039</label>
+                          <span class="num_span">77</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS040" value="RWS040">
+                          <label for="RWS040">RWS040</label>
+                          <span class="num_span">72</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS041" value="RWS041">
+                          <label for="RWS041">RWS041</label>
+                          <span class="num_span">139</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS042" value="RWS042">
+                          <label for="RWS042">RWS042</label>
+                          <span class="num_span">104</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS043" value="RWS043">
+                          <label for="RWS043">RWS043</label>
+                          <span class="num_span">18</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS044" value="RWS044">
+                          <label for="RWS044">RWS044</label>
+                          <span class="num_span">22</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS045" value="RWS045">
+                          <label for="RWS045">RWS045</label>
+                          <span class="num_span">14</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS046" value="RWS046">
+                          <label for="RWS046">RWS046</label>
+                          <span class="num_span">51</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS047" value="RWS047">
+                          <label for="RWS047">RWS047</label>
+                          <span class="num_span">70</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS048" value="RWS048">
+                          <label for="RWS048">RWS048</label>
+                          <span class="num_span">82</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS049" value="RWS049">
+                          <label for="RWS049">RWS049</label>
+                          <span class="num_span">87</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS050" value="RWS050">
+                          <label for="RWS050">RWS050</label>
+                          <span class="num_span">101</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS051" value="RWS051">
+                          <label for="RWS051">RWS051</label>
+                          <span class="num_span">82</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS052" value="RWS052">
+                          <label for="RWS052">RWS052</label>
+                          <span class="num_span">104</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS053" value="RWS053">
+                          <label for="RWS053">RWS053</label>
+                          <span class="num_span">52</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS054" value="RWS054">
+                          <label for="RWS054">RWS054</label>
+                          <span class="num_span">41</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS055" value="RWS055">
+                          <label for="RWS055">RWS055</label>
+                          <span class="num_span">77</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS056" value="RWS056">
+                          <label for="RWS056">RWS056</label>
+                          <span class="num_span">59</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS057" value="RWS057">
+                          <label for="RWS057">RWS057</label>
+                          <span class="num_span">54</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS058" value="RWS058">
+                          <label for="RWS058">RWS058</label>
+                          <span class="num_span">33</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS059" value="RWS059">
+                          <label for="RWS059">RWS059</label>
+                          <span class="num_span">45</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS060" value="RWS060">
+                          <label for="RWS060">RWS060</label>
+                          <span class="num_span">37</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS061" value="RWS061">
+                          <label for="RWS061">RWS061</label>
+                          <span class="num_span">38</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS062" value="RWS062">
+                          <label for="RWS062">RWS062</label>
+                          <span class="num_span">63</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS063" value="RWS063">
+                          <label for="RWS063">RWS063</label>
+                          <span class="num_span">39</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS064" value="RWS064">
+                          <label for="RWS064">RWS064</label>
+                          <span class="num_span">31</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS065" value="RWS065">
+                          <label for="RWS065">RWS065</label>
+                          <span class="num_span">32</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS066" value="RWS066">
+                          <label for="RWS066">RWS066</label>
+                          <span class="num_span">41</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS067" value="RWS067">
+                          <label for="RWS067">RWS067</label>
+                          <span class="num_span">90</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS068" value="RWS068">
+                          <label for="RWS068">RWS068</label>
+                          <span class="num_span">58</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS069" value="RWS069">
+                          <label for="RWS069">RWS069</label>
+                          <span class="num_span">58</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS070" value="RWS070">
+                          <label for="RWS070">RWS070</label>
+                          <span class="num_span">65</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS071" value="RWS071">
+                          <label for="RWS071">RWS071</label>
+                          <span class="num_span">42</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS072" value="RWS072">
+                          <label for="RWS072">RWS072</label>
+                          <span class="num_span">50</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS073" value="RWS073">
+                          <label for="RWS073">RWS073</label>
+                          <span class="num_span">16</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS074" value="RWS074">
+                          <label for="RWS074">RWS074</label>
+                          <span class="num_span">26</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS075" value="RWS075">
+                          <label for="RWS075">RWS075</label>
+                          <span class="num_span">23</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS076" value="RWS076">
+                          <label for="RWS076">RWS076</label>
+                          <span class="num_span">27</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS077" value="RWS077">
+                          <label for="RWS077">RWS077</label>
+                          <span class="num_span">36</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS078" value="RWS078">
+                          <label for="RWS078">RWS078</label>
+                          <span class="num_span">43</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS079" value="RWS079">
+                          <label for="RWS079">RWS079</label>
+                          <span class="num_span">49</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS080" value="RWS080">
+                          <label for="RWS080">RWS080</label>
+                          <span class="num_span">40</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS081" value="RWS081">
+                          <label for="RWS081">RWS081</label>
+                          <span class="num_span">42</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS082" value="RWS082">
+                          <label for="RWS082">RWS082</label>
+                          <span class="num_span">59</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS083" value="RWS083">
+                          <label for="RWS083">RWS083</label>
+                          <span class="num_span">36</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS084" value="RWS084">
+                          <label for="RWS084">RWS084</label>
+                          <span class="num_span">50</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS085" value="RWS085">
+                          <label for="RWS085">RWS085</label>
+                          <span class="num_span">74</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS086" value="RWS086">
+                          <label for="RWS086">RWS086</label>
+                          <span class="num_span">80</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS087" value="RWS087">
+                          <label for="RWS087">RWS087</label>
+                          <span class="num_span">87</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS088" value="RWS088">
+                          <label for="RWS088">RWS088</label>
+                          <span class="num_span">64</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS089" value="RWS089">
+                          <label for="RWS089">RWS089</label>
+                          <span class="num_span">66</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS090" value="RWS090">
+                          <label for="RWS090">RWS090</label>
+                          <span class="num_span">66</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS091" value="RWS091">
+                          <label for="RWS091">RWS091</label>
+                          <span class="num_span">65</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS092" value="RWS092">
+                          <label for="RWS092">RWS092</label>
+                          <span class="num_span">69</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS093" value="RWS093">
+                          <label for="RWS093">RWS093</label>
+                          <span class="num_span">58</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS094" value="RWS094">
+                          <label for="RWS094">RWS094</label>
+                          <span class="num_span">72</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS095" value="RWS095">
+                          <label for="RWS095">RWS095</label>
+                          <span class="num_span">68</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS096" value="RWS096">
+                          <label for="RWS096">RWS096</label>
+                          <span class="num_span">58</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS097" value="RWS097">
+                          <label for="RWS097">RWS097</label>
+                          <span class="num_span">76</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS098" value="RWS098">
+                          <label for="RWS098">RWS098</label>
+                          <span class="num_span">64</span>
+                      </p>
+
+                      <p class="menu_p">
+                          <input class="menu_checkbox" type="checkbox" name="sampleCheckbox" id="RWS099" value="RWS099">
+                          <label for="RWS099">RWS099</label>
+                          <span class="num_span">68</span>
+                      </p>
+
+                  </div>
+                </div>
+
+            </div>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="batch_import()">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+
+
+
+{% block js %}
+<script src="{% static 'db/js/heatmap.js' %}"></script>
+
+{% endblock js %}

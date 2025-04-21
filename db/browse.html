@@ -1,0 +1,213 @@
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - Browse</title>
+{% endblock title %}
+
+{% block content %}
+<div class="modal fade" id="sequenceModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sequenceLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="sequenceLabel"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" >
+          <p id="sequence_content" style="font-size: 16px;margin-bottom: 0;word-wrap: break-word;"></p>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="copyButton">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="resultModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="resultLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="resultLabel"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" >
+          <table class="table table-bordered table-hover mt-1">
+            <thead>
+                <tr style="white-space: nowrap;">
+                  <th >ID</th><th >Sample</th><th >Site</th>
+                  <th >Taxonomy</th><th >Relative abundance</th><th >Length</th><th >RPKM</th>
+                  <th >Completeness</th><th >Contamination</th><th >GC</th><th >N50</th>
+                </tr>
+            </thead>
+            <tbody id="result_body">
+
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container font-nom mb-5 mt-5"  style="min-height:400px;padding: 10px 30px;">
+    <div class="row">
+        <div class="col-12" >
+            <div id="section_0" class="section mb-5" >
+                <div class="row">
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group" style="width:100%;margin-bottom: 30px;">
+                      <input type="checkbox" class="btn-check" name="taxcheckbox" id="Kingdom" autocomplete="off" onclick="updateCheckboxes(this)" checked>
+                      <label class="btn btn-label" for="Kingdom">Kingdom</label>
+
+                      <input type="checkbox" class="btn-check" name="taxcheckbox" id="Phylum" autocomplete="off" onclick="updateCheckboxes(this)" checked>
+                      <label class="btn btn-label" for="Phylum">Phylum</label>
+
+                      <input type="checkbox" class="btn-check" name="taxcheckbox" id="Class" autocomplete="off" onclick="updateCheckboxes(this)" checked>
+                      <label class="btn btn-label" for="Class">Class</label>
+
+                      <input type="checkbox" class="btn-check" name="taxcheckbox" id="Order" autocomplete="off" onclick="updateCheckboxes(this)">
+                      <label class="btn btn-label" for="Order">Order</label>
+
+                      <input type="checkbox" class="btn-check" name="taxcheckbox" id="Family" autocomplete="off" onclick="updateCheckboxes(this)">
+                      <label class="btn btn-label" for="Family">Family</label>
+
+                      <input type="checkbox" class="btn-check" name="taxcheckbox" id="Genus" autocomplete="off" onclick="updateCheckboxes(this)">
+                      <label class="btn btn-label" for="Genus">Genus</label>
+
+                      <input type="checkbox" class="btn-check" name="taxcheckbox" id="Species" autocomplete="off" onclick="updateCheckboxes(this)">
+                      <label class="btn btn-label" for="Species">Species</label>
+                    </div>
+                </div>
+
+                <div id="outer_div" style="height: 1500px;min-width:100%;overflow: hidden;position: relative;">
+                    <div style="position: absolute;left: 5px;top: 5px;"><h3>Statistics and browsing of RWAMdb's taxonomy system</h3>
+                        <p>● Click the button above to select the displayed taxonomic level.<br>● Hover over the node to view the number of MAGs associated with it.<br>● Click on a node to search for MAGs matching the pathway.<br>● Scroll within the tree area to zoom in or out.<br>● Drag the mouse within the tree area to move the tree.</p>
+                    </div>
+                    <div id="tree_container" style="height: 1500px;width: 1500px;position: absolute;left: 50%; transform: translateX(-50%);" ></div>
+                </div>
+
+            </div>
+            <div id="section_1" class="section mb-5" >
+                <h1 class="browse_title" >Sites<span class="browse_num">&nbsp;33&nbsp;</span></h1>
+                <hr >
+                <div >
+                <table class="table table-hover mt-1 display" id="site_table">
+                    <thead >
+                        <tr style="white-space: nowrap;">
+                          <th >ID</th>
+                          <th >Name</th>
+                          <th >Soil type</th>
+                          <th >Longitude</th>
+                          <th >Latitude</th>
+                          <th >Altitude (m)</th>
+                          <th >Temperature 1991-2022(&deg;C)</th>
+                          <th >Precipitation 1991-2022(mm)</th>
+                          <th >Temperature 2022(&deg;C)</th>
+                          <th >Precipitation 2022(mm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for site in sites %}
+                        <tr>
+                            <td ><a class="project_sample_a" href="{% url 'db:site' site.id %}" target="_blank">{{ site.id }}</a></td>
+                            <td >{{ site.name }}</td>
+                            <td >{{ site.type }}</td>
+                            <td >{{ site.longitude }}</td>
+                            <td >{{ site.latitude }}</td>
+                            <td >{{ site.altitude }}</td>
+                            <td >{{ site.temperature }}</td>
+                            <td >{{ site.precipitation }}</td>
+                            <td >{{ site.temperature_2022 }}</td>
+                            <td >{{ site.precipitation_2022 }}</td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            <div id="section_2" class="section mb-5" >
+                <h1 class="browse_title" >Samples<span class="browse_num">99</span></h1>
+                <hr >
+                <div >
+                <table class="table table-hover mt-1 display" id="sample_table">
+                    <thead ><tr style="white-space: nowrap;"><th >ID</th><th >Site</th>
+                          <th >TN (g/kg)</th>
+                          <th >TP (g/kg)</th>
+                          <th >TC (g/kg)</th>
+                          <th >TS (g/kg)</th>
+                          <th >SOC (mg/kg)</th>
+                        <th >C/N</th>
+                        <th >IC</th>
+                        <th >MBC</th>
+                         <th >pH</th>
+                     <th >Water</th>
+                          <th >NO<sub>3</sub><sup>-</sup> (mg/kg)</th>
+                          <th >NH<sub>4</sub><sup>+</sup> (mg/kg)</th>
+                         </tr>
+                    </thead>
+                    <tbody>
+                        {% for sample in samples %}
+
+                            <tr>
+                                <td ><a class="project_sample_a" href="{% url 'db:sample' sample.id %}" target="_blank">{{ sample.id }}</a></td>
+                                <td ><a class="project_sample_a" href="{% url 'db:site' sample.site_id %}" target="_blank">{{ sample.site_id }}</a></td>
+
+                                <td >{{ sample.TN }}</td>
+                                <td >{{ sample.TP }}</td>
+                                <td >{{ sample.TC }}</td>
+                                <td >{{ sample.TS }}</td>
+                                <td >{{ sample.SOC }}</td>
+                                <td >{{ sample.C_N }}</td>
+                                <td >{{ sample.IC }}</td>
+
+                                <td >{{ sample.MBC }}</td>
+                                <td >{{ sample.pH }}</td>
+                                <td >{{ sample.water }}</td>
+                                <td >{{ sample.NO3|default_if_none:"" }}</td>
+                                <td >{{ sample.NH4 }}</td>
+                            </tr>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            <div id="section_3" class="section mb-5" >
+                <h1 class="browse_title" >MAGs<span class="browse_num">6020</span></h1>
+                <hr >
+                <div  >
+                    <table id="bin_table" class="table table-hover mt-1 display" style="vertical-align: middle;">
+                        <thead ><tr style="white-space: nowrap;"><th >ID</th><th >Sample</th><th >Site</th>
+                          <th >Taxonomy</th>
+                          <th >Relative abundance</th>
+                          <th >Length</th>
+                          <th >RPKM</th><th >Completeness</th><th >Contamination</th>
+                            <th >GC</th><th >N50</th>
+                          </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div id="section_4" class="section mb-5"  >
+                <h1 class="browse_title" >Genes<span class="browse_num">16,389,456</span></h1>
+                <hr >
+                <div  >
+                    <table id="gene_table" class="table mt-1 display" style="vertical-align: middle;">
+                        <thead ><tr style="white-space: nowrap;"><th >ID</th><th >Length</th><th class="text-center">Sequence</th><th class="text-center">Annotation</th></tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock content %}
+
+
+
+
+{% block js %}
+ <script src="{% static 'db/js/browse.js' %}"></script>
+{% endblock js %}

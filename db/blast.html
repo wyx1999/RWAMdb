@@ -1,0 +1,123 @@
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - Blast</title>
+{% endblock title %}
+
+
+{% block content %}
+
+<div class="container mt-5 font-nom mb-5">
+    <div class="row">
+        <div class="col-12 mx-auto mt-5 mt-lg-0">
+
+                <div class="row mt-5">
+                    <div class="col-lg-4 col-xs-12" id="left_div">
+                        <div style="margin-bottom: 50px;position: relative;border: 1px solid #dee2e6;padding: 10px;">
+                            <div class="parallelogram"><h6 >Search Method and Set</h6></div>
+                            <div class="row">
+                                <div class="col-4 "><label for="method">Method:</label></div>
+                                <div class="col-8 ">
+                                     <select id="method" style="margin-bottom: 10px;" onchange="method_change()">
+                                        <option selected value="blastn">blastn</option>
+                                        <option value="blastx">blastx</option>
+                                         <option value="blastp">blastp</option>
+                                    </select>
+                                </div>
+
+
+                                <div class="col-4 "><label for="database">Database:</label></div>
+                                <div class="col-8 ">
+                                    <select id="database">
+                                        <option value="rubisco" class="p" disabled>Rubisco</option>
+                                        <option selected value="RWAMdb" class="n">RWAMdb</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div style="margin-bottom: 50px;position: relative;border: 1px solid #dee2e6;padding: 10px;">
+                            <div class="parallelogram"><h6 >Search Parameters</h6></div>
+                            <div class="row" >
+                                <div class="col-4 "><label for="evalue">E-value:</label></div>
+                                <div class="col-8 ">
+                                     <input id="evalue" type="number" value="0.00001" style="margin-bottom: 10px;" title="">
+                                </div>
+                                <div class="col-4 "><label for="max_target_seqs">Max target sequences:</label></div>
+                                <div class="col-8 ">
+                                     <input id="max_target_seqs" type="number" value="5" style="margin-bottom: 10px;">
+                                </div>
+                                <div class="col-4 "><label for="perc_identity">Percent identity:</label></div>
+                                <div class="col-8 ">
+                                     <input id="perc_identity" type="number" value="90" style="margin-bottom: 10px;" >
+                                </div>
+                                <div class="col-4 "><label for="word_size">Word size:</label></div>
+                                <div class="col-8 ">
+                                     <input id="word_size" type="number" value="11" style="margin-bottom: 10px;" >
+                                </div>
+                                <div class="col-4 "><label for="gapopen_extend">Gap opening/extension penalty:</label></div>
+                                <div class="col-8 ">
+                                    <select id="gapopen_extend" style="margin-bottom: 10px;">
+                                        <option  value="5, 2" selected>5, 2</option>
+                                        <option  value="3, 1">3, 1</option>
+                                        <option  value="10, 1">10, 1</option>
+                                        <option  value="10, 2">10, 2</option>
+                                        <option  value="15, 2">15, 2</option>
+                                        <option  value="2, 1">2, 1</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-4 "><label for="penalty">Mismatch penalty:</label></div>
+                                <div class="col-8 ">
+                                     <input id="penalty" type="number" value="-3" style="margin-bottom: 10px;" >
+                                </div>
+                                <div class="col-4 "><label for="reward">Match reward:</label></div>
+                                <div class="col-8 ">
+                                     <input id="reward" type="number" value="1" style="margin-bottom: 10px;" >
+                                </div>
+
+
+
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 0;position: relative;">
+                            <div class="parallelogram"><h6 >Enter Query Sequence</h6></div>
+                            <textarea class=" blast_textarea" rows="12" id="sequence" name="sequence"  placeholder="Enter FASTA sequence(s)"></textarea>
+                        </div>
+
+                         <div  style="display:flex;justify-content: space-between;border: 1px solid #dee2e6;padding: 5px;">
+                            <button type="button" class="btn custom-btn rectangle" onclick="blast_example();">Example</button>
+                            <button type="button" class="btn custom-btn rectangle" onclick="do_blast();">Submit</button>
+                         </div>
+
+
+
+                    </div>
+
+                    <div class="col-lg-8 col-xs-12" >
+                        <div  class="table-container">
+                        <table class="table table-bordered table-hover display"  id="divtable">
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+    </div>
+</div>
+{% endblock content %}
+
+
+
+
+{% block js %}
+
+<script src="{% static 'db/js/blast.js' %}"></script>
+
+{% endblock js %}
+
+
+

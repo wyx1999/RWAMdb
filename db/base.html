@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+
+    {% block title %}
+    <title >Base</title>
+    {% endblock title %}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- CSS FILES -->
+    <link rel="shortcut icon" href="{% static 'db/images/icon.ico' %}" />
+    <link href="{% static 'db/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'db/css/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="{% static 'db/css/templatemo-topic-listing.css' %}" rel="stylesheet">
+    <link href="{% static 'db/css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'db/css/base.css' %}" rel="stylesheet">
+
+</head>
+
+<body id="top" >
+    <div class="loading">
+        <div class="loading_pic"></div>
+    </div>
+
+
+    <div class="modal fade" id="prompt" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="promptLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="promptLabel">Prompt</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <p id="prompt_content" style="font-size: 16px;margin-bottom: 0;"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Accept</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main >
+        <header class="site-header d-flex flex-column justify-content-center align-items-center">
+            <div class="container" style="z-index: 88;">
+                <div class="row align-items-center justify-content-between" style="height:100%;margin:0;">
+                    <div class="col-12 col-lg-6">
+                        <a href="{% url 'db:home' %}">
+                       <h2 class="text-white font-logo" style="letter-spacing: -6px;font-weight: bold;">RWAM</h2>
+                       <p class="text-white font-logo  d-none d-sm-block" style="font-size:14px;">&nbsp;&nbsp;Resolved Wetland Autotrophic  Mircobiome database</p></a>
+                    </div>
+                    <div class="col-6 d-none d-lg-block">
+                        <a href="http://www.cls.en.zju.edu.cn/" style="float:right;" target="_blank"><img src="{% static 'db/images/logo.png' %}"  style="height:60px;"></a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="navbar navbar-expand-lg" style="padding:0 0;z-index: 88;">
+            <div class="container">
+                <button class="navbar-toggler navbar-toggler_cos" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav  me-lg-auto" style="height:100%;">
+                        <li class="nav-item">
+                            <a class="nav-link"  href="{% url 'db:home' %}" >Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link navbar_dropdown" id="browseMenu"     href="#" >Browse</a>
+                            <ul class="dropdown-menu dropdown-menu-light" aria-labelledby="browseMenu">
+                                <li><a class="dropdown-item myLink" href="{% url 'db:browse' %}#section_0" data-url="#section_0">Statistics</a></li>
+                                <li><a class="dropdown-item myLink" href="{% url 'db:browse' %}#section_1" data-url="#section_1">Sites</a></li>
+                                <li><a class="dropdown-item myLink" href="{% url 'db:browse' %}#section_2" data-url="#section_2">Samples</a></li>
+                                <li><a class="dropdown-item myLink" href="{% url 'db:browse' %}#section_3" data-url="#section_3">MAGs</a></li>
+                                <li><a class="dropdown-item myLink" href="{% url 'db:browse' %}#section_4" data-url="#section_4">Genes</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'db:search' %}" >Search</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link navbar_dropdown" id="toolMenu"     href="#" >Tools</a>
+                            <ul class="dropdown-menu dropdown-menu-light" aria-labelledby="toolMenu">
+                                <li><a class="dropdown-item" href="{% url 'db:blast' %}" >Blast</a></li>
+                                <li><a class="dropdown-item" href="{% url 'db:heatmap' %}" >Heatmap</a></li>
+                                <li><a class="dropdown-item" href="{% url 'db:ea' %}" >APM</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link navbar_dropdown" id="docMenu" href="#" >Documentation</a>
+                            <ul class="dropdown-menu dropdown-menu-light" aria-labelledby="docMenu">
+                                <li><a class="dropdown-item" href="{% url 'db:documentation' %}#section_1" >Tutorial</a></li>
+                                <li><a class="dropdown-item" href="{% url 'db:documentation' %}#section_2" >About</a></li>
+                                <li><a class="dropdown-item" href="{% url 'db:documentation' %}#section_3" >FAQ</a></li>
+                                <li><a class="dropdown-item" href="{% url 'db:documentation' %}#section_4" >Acknowledgments</a></li>
+                                <li><a class="dropdown-item" href="{% url 'db:documentation' %}#section_5" >Contact</a></li>
+                                <li><a class="dropdown-item" href="{% url 'db:documentation' %}#section_6" >Download</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="d-none d-xl-block" style="position:relative;">
+                        <form action="{% url 'db:quick_search' %}" id="quickSearchForm" method="post">
+                        <input type="text" id="quick_search_keyword" name="quick_search_keyword" class="quick-search-text"  placeholder="Quick Search (e.g. RW05)" autocomplete="off" aria-label="Search">
+                        <button type="submit"   class="quick-search-btn"><i class="bi bi-search"></i></button>
+
+                        <div class="autoComplete">
+                            <ul style="padding:0;"></ul>
+                        </div>
+                        </form>
+                    </div>
+                    {% csrf_token %}
+                </div>
+            </div>
+        </nav>
+        <div  id="content" style="min-height:80vh;" >
+            {% block content %}
+            {% endblock content %}
+        </div>
+    </main>
+    <footer  style="padding-top: 30px;padding-bottom: 30px;background-color:#0F4C81;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-12">
+                    <a href="http://www.cls.en.zju.edu.cn/" target="_blank"><img src="{% static 'db/images/logo.png' %}" style="height:60px;"></a>
+                </div>
+
+                <div class="col-lg-8 col-md-12">
+
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- JAVASCRIPT FILES -->
+    <script src="{% static 'db/js/jquery.min.js' %}"></script>
+    <script src="{% static 'db/js/bootstrap.bundle.min.js' %}"></script>
+    <script type="text/javascript">
+      function loadAmapScript() {
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://webapi.amap.com/maps?v=1.4.15&key=e42692d4c61fb355138d1c9112b4a0a0&plugin=AMap.MouseTool,AMap.Scale';
+
+        // 绑定 onerror 事件，当加载失败时自动重新加载
+        script.onerror = function() {
+          console.log('高德地图脚本加载失败，正在重新加载...');
+          // 重新加载脚本
+          loadAmapScript();
+        };
+
+        // 将 script 标签添加到页面
+        document.head.appendChild(script);
+      }
+
+      // 初次调用加载函数
+      loadAmapScript();
+    </script>
+    <script src="{% static 'db/js/jquery.sticky.js' %}"></script>
+    <script src="{% static 'db/js/echarts.min.js' %}"></script>
+    
+    <script src="{% static 'db/js/datatables.min.js' %}"></script>
+    <script src="{% static 'db/js/base.js' %}"></script>
+
+
+
+
+
+{% block js %}
+
+{% endblock js %}
+</body>
+</html>

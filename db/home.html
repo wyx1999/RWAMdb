@@ -1,0 +1,140 @@
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - Home</title>
+<link href="{% static 'db/css/odometer-theme-default.css' %}" rel="stylesheet">
+{% endblock title %}
+
+{% block content %}
+ <div id="carouselExample" class="carousel slide mb-4">
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <div class="carousel-div">
+                  <img src="{% static 'db/images/bg.jpg' %}" class="img-fluid">
+                  <div class="d-none d-md-block" >
+                      <p style="width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;font-size: 4rem;font-weight: bold;font-family: 'Georgia', serif;">Resolved Wetland Autotrophic Microbiome database</p>
+
+                  </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="carousel-div">
+                  <img src="{% static 'db/images/bg2.jpg' %}" class="img-fluid">
+                    <div class="d-none d-md-block">
+                        <p style="width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;font-size: 4rem;font-weight: bold;font-family: 'Georgia', serif;">A Comprehensive Database for Exploring Autotrophic Microbes in Wetlands</p>
+
+                    <p></p>
+                  </div>
+              </div>
+            </div>
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+</div>
+
+<div class="container mt-4 mb-5 ">
+    <div class="row align-items-center justify-content-center">
+    <div class="row   col-xxl-8">
+         <div class="col-lg-3 col-sm-6 " >
+            <div class="single-counter" >
+                <a href="{% url 'db:browse' %}#section_1">
+                    <img src="{% static 'db/images/site.png' %}" >
+                    <h2>
+                        <span class="odometer" >0</span>
+                    </h2>
+                    <p>Site</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-sm-6" >
+            <div class="single-counter" >
+                <a href="{% url 'db:browse' %}#section_2">
+                    <img src="{% static 'db/images/sample.png' %}" >
+                    <h2>
+                        <span class="odometer" >0</span>
+                    </h2>
+                    <p>Sample</p>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6" >
+            <div class="single-counter" >
+                <a href="{% url 'db:browse' %}#section_3">
+                    <img src="{% static 'db/images/MAG.png' %}" >
+                    <h2>
+                        <span class="odometer" >0</span>
+                    </h2>
+                    <p>MAG</p>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6" >
+            <div class="single-counter" >
+                <a href="{% url 'db:browse' %}#section_4">
+                    <img src="{% static 'db/images/gene.png' %}" >
+                    <h2>
+                        <span class="odometer" >0</span>
+                    </h2>
+                    <p>Gene</p>
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="row  align-items-center ">
+        <div class=" col-12">
+        <div class="container col-xxl-8 px-4 py-5">
+            <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+              <div class="col-10 col-sm-8 col-lg-6">
+                <img src="{% static 'db/images/Figures.jpg' %}" class="d-block mx-lg-auto img-fluid" alt="Graphical Abstract" width="100%"  loading="lazy">
+              </div>
+              <div class="col-lg-6">
+                <h1 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">Introduction</h1>
+                <p class="lead">RWAMdb offers a comprehensive repository of information on wetland autotrophic microorganisms, encompassing the entire workflow from field sample collection to gene annotation. With its user-friendly web interface, RWAMdb provides diverse browsing and search functionalities, ensuring precise and efficient access to relevant data. Additionally, the database integrates a suite of visualization and analytical tools, including BLAST, pathway completeness visualization via heatmaps, and autotrophic pathway mapping (APM).</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a class="btn btn-primary btn-lg px-4 me-md-2" style="color: #ffffff" href="{% url 'db:search' %}" target="_blank">Start</a>
+                    <a class="btn btn-outline-secondary btn-lg px-4" href="{% url 'db:documentation' %}" target="_blank">Documentation</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 mt-5" >
+            <div style="height:80vh; min-height:450px;position:relative;">
+                <div id="map_div" style=" width: 100%;height:100%;"></div>
+                <div class="input-title">
+                    <p style="margin-bottom:5px;">Sampling site</p>
+
+                </div>
+                <div class="input-card">
+                    <p style="margin-bottom:5px;">Lng/Lat:</p>
+                    <div class="input-item">
+                      <input type="text" readonly id="lnglat">
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+
+
+
+
+
+    </div>
+</div>
+
+
+{% endblock content %}
+
+
+{% block js %}
+<script src="{% static 'db/js/odometer.min.js' %}"></script>
+<script src="{% static 'db/js/home.js' %}"></script>
+
+{% endblock js %}

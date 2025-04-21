@@ -1,0 +1,283 @@
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - Search</title>
+{% endblock title %}
+
+{% block content %}
+<div class="modal fade" id="statModal" tabindex="-1" aria-labelledby="statModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="statModalLabel">Project Statistics</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" >
+          <div id="echarts_div" style="height:400px;width: 100%;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container mt-3 mb-3 font-nom">
+    <div class="row">
+        <div class="col-lg-3 col-12  pt-3 " style="border: 1px solid #dee2e6;">
+            <div style="position:relative;top:0;">
+                <input type="text" id="search_keyword" class="search-text" style="width:100%;" value="{{ keyword }}"  placeholder="Search by Site ID, Sample ID, MAG ID, or Taxonomy" autocomplete="off" aria-label="Search" onkeydown="checkEnter(event)">
+                <button type="button"  onclick="bar_search()" class="search-btn" ><i class="bi bi-search"></i></button>
+                <div class="autoComplete_1">
+                    <ul style="padding:0;"></ul>
+                </div>
+            </div>
+            <p style="font-size:14px;">e.g. Site ID: <span class="example_span" onclick="search_example(this)">RW05</span>, Sample ID: <span class="example_span" onclick="search_example(this)">RWS001</span>, MAGs ID: <span class="example_span" onclick="search_example(this)">RWAM0001</span> or Taxon Name: <span class="example_span" onclick="search_example(this)">Methylomirabilota</span></p>
+
+            <div class="menu_div">
+                <div class="menu_p" style="display: flex;align-items: center;justify-content: space-between;">
+                  <div>
+                  <button class="menu_btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseValue" aria-expanded="false" aria-controls="collapseValue" onclick="collapse_toggle(this)">
+                    <i class="bi bi-chevron-down"></i>
+                  </button>
+                  <span class="menu_title">Numerical limit</span>
+                  </div>
+                </div>
+
+                <div class="collapse show" id="collapseValue" >
+                  <div class="card card-body">
+
+                    <div class="input-group">
+                        <span class="input-group-text prefix">Relative abundance</span>
+                        <input type="number" aria-label="Min" class="form-control" id="ra_min" onchange="numerical_limit('ra')" value="0">
+                        <span class="input-group-text">-</span>
+                        <input type="number" aria-label="Max" class="form-control" id="ra_max" onchange="numerical_limit('ra')" value="100">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                      <div class="input-group">
+                        <span class="input-group-text prefix">Completeness</span>
+                        <input type="number" aria-label="Min" class="form-control" id="completeness_min" onchange="numerical_limit('completeness')" value="0">
+                        <span class="input-group-text ">-</span>
+                        <input type="number" aria-label="Max" class="form-control" id="completeness_max" onchange="numerical_limit('completeness')" value="100">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text prefix">Contamination</span>
+                        <input type="number" aria-label="Min" class="form-control" id="contamination_min" onchange="numerical_limit('contamination')" value="0">
+                        <span class="input-group-text">-</span>
+                        <input type="number" aria-label="Max" class="form-control" id="contamination_max" onchange="numerical_limit('contamination')" value="10">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text prefix">GC</span>
+                        <input type="number" aria-label="Min" class="form-control" id="GC_min" onchange="numerical_limit('GC')" value="0.0">
+                        <span class="input-group-text ">-</span>
+                        <input type="number" aria-label="Max" class="form-control" id="GC_max" onchange="numerical_limit('GC')" value="0.757">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text prefix">Length</span>
+                        <input type="number" aria-label="Min" class="form-control" id="length_min" onchange="numerical_limit('length')" value="267105">
+                        <span class="input-group-text">-</span>
+                        <input type="number" aria-label="Max" class="form-control" id="length_max" onchange="numerical_limit('length')" value="14682464">
+                        <span class="input-group-text suffix">bp</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text prefix">N50</span>
+                        <input type="number" aria-label="Min" class="form-control" id="N50_min" onchange="numerical_limit('N50')" value="0">
+                        <span class="input-group-text">-</span>
+                        <input type="number" aria-label="Max" class="form-control" id="N50_max" onchange="numerical_limit('N50')" value="461620">
+                        <span class="input-group-text suffix">bp</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text prefix">RPKM</span>
+                        <input type="number" aria-label="Min" class="form-control" id="RPKM_min" onchange="numerical_limit('RPKM')" value="0.4">
+                        <span class="input-group-text">-</span>
+                        <input type="number" aria-label="Max" style="border-right: 0;" class="form-control" id="RPKM_max" onchange="numerical_limit('RPKM')" value="196.83226">
+                        <span class="input-group-text suffix" style="background-color: #ffffff;border-left: 0;"></span>
+                    </div>
+
+
+
+                  </div>
+                </div>
+            </div>
+            <div class="menu_div">
+                <div class="menu_p" style="display: flex;align-items: center;justify-content: space-between;">
+                  <div>
+                  <button class="menu_btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePath" aria-expanded="false" aria-controls="collapsePath" onclick="collapse_toggle(this)">
+                    <i class="bi bi-chevron-down"></i>
+                  </button>
+                  <span class="menu_title">Threshold for pathway conditions</span>
+                  </div>
+                </div>
+
+                <div class="collapse show" id="collapsePath" >
+                  <div class="card card-body">
+                    <div class="input-group">
+                        <label class="input-group-text prefix" for="M00165_step">M00165 Step Ratio</label>
+                        <span class="input-group-text">&ge;</span>
+                        <input type="number" class="form-control" id="M00165_step" onchange="numerical_limit('M00165_step')" value="80.0">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-group-text prefix" for="M00173_step">M00173 Step Ratio</label>
+                        <span class="input-group-text">&ge;</span>
+                        <input type="number" class="form-control" id="M00173_step" onchange="numerical_limit('M00173_step')" value="0.0">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                      <div class="input-group">
+                        <label class="input-group-text prefix" for="M00374_step">M00374 Step Ratio</label>
+                        <span class="input-group-text">&ge;</span>
+                        <input type="number" class="form-control" id="M00374_step" onchange="numerical_limit('M00374_step')" value="0.0">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-group-text prefix" for="M00375_step">M00375 Step Ratio</label>
+                        <span class="input-group-text">&ge;</span>
+                        <input type="number" class="form-control" id="M00375_step" onchange="numerical_limit('M00375_step')" value="0.0">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-group-text prefix" for="M00376_step">M00376 Step Ratio</label>
+                        <span class="input-group-text">&ge;</span>
+                        <input type="number" class="form-control" id="M00376_step" onchange="numerical_limit('M00376_step')" value="0.0">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-group-text prefix" for="M00374_step">M00377 Step Ratio</label>
+                        <span class="input-group-text">&ge;</span>
+                        <input type="number" class="form-control" id="M00377_step" onchange="numerical_limit('M00377_step')" value="0.0">
+                        <span class="input-group-text suffix">%</span>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <div class="menu_div"><div class="card card-body" style="border: none;padding: 0 16px">
+             <button type="button" style="width: 100%;" class="btn btn-outline-primary" onclick="filter()">Filter</button></div></div>
+
+        </div>
+
+        <div class="col-lg-9 col-12">
+            <div style="position:relative;">
+                <div id="map_div" style=" width: 100%; height:600px;"></div>
+                <div class="input-title"><p style="margin-bottom:5px;">Map search</p></div>
+                <div class="menu_div soiltype">
+                    <div class="menu_p" style="display: flex;align-items: center;justify-content: space-between;">
+                      <div>
+                          <button class="menu_btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSoiltype" aria-expanded="false" aria-controls="collapseSoiltype" onclick="collapse_toggle(this)">
+                            <i class="bi bi-chevron-down"></i>
+                          </button>
+                          <span class="menu_title"> Soil type</span>
+                      </div>
+                    </div>
+                    <div class="collapse show" id="collapseSoiltype">
+                      <div class="card card-body">
+                          <p class="menu_p">
+                              <input class="menu_checkbox" type="checkbox" onclick="select_site(this)" name="mapCheckbox" id="Marsh" value="Marsh" >
+                              <label  for="Marsh">Marsh</label>
+                              <span class="num_span">8</span>
+                          </p>
+
+                          <p class="menu_p">
+                              <input class="menu_checkbox" type="checkbox" onclick="select_site(this)" name="mapCheckbox" id="River" value="River" >
+                              <label  for="River">River</label>
+                              <span class="num_span">5</span>
+                          </p>
+                          <p class="menu_p">
+                              <input class="menu_checkbox" type="checkbox" onclick="select_site(this)" name="mapCheckbox" id="Lake" value="Lake" >
+                              <label  for="Lake">Lake</label>
+                              <span class="num_span">7</span>
+                          </p>
+                          <p class="menu_p">
+                              <input class="menu_checkbox" type="checkbox" onclick="select_site(this)" name="mapCheckbox" id="Paddy" value="Paddy" >
+                              <label  for="Paddy">Paddy soil</label>
+                              <span class="num_span">11</span>
+                          </p>
+                          <p class="menu_p">
+                              <input class="menu_checkbox" type="checkbox" onclick="select_site(this)" name="mapCheckbox" id="Coastal" value="Coastal" >
+                              <label  for="Coastal">Coastal wetland</label>
+                              <span class="num_span">2</span>
+                          </p>
+                      </div>
+                    </div>
+                </div>
+
+                <div class="menu_div drew-card" >
+                    <div class="menu_p" style="display: flex;align-items: center;justify-content: space-between;">
+                      <div>
+                          <button class="menu_btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDrew" aria-expanded="false" aria-controls="collapseDrew" onclick="collapse_toggle(this)">
+                            <i class="bi bi-chevron-down"></i>
+                          </button>
+                          <span class="menu_title">Drawing selection</span>
+                      </div>
+                    </div>
+                    <div class="collapse show" id="collapseDrew">
+                      <div class="card card-body">
+                          <p class="menu_p">
+                              <input type="radio" id="rectangle" name='func' value='rectangle'>
+                              <label  for="rectangle">Rectangle</label>
+                          </p>
+                          <p class="menu_p">
+                              <input type="radio" id="circle" name='func' value='circle'>
+                              <label  for="circle">Circle</label>
+                          </p>
+                          <div class="menu_p">
+                                <button id="drew_clear" type="button" class="draw-btn" onclick="drew_clear()">Clear</button>
+                                <button id="drew_close" type="button" class="draw-btn" onclick="drew_close()">Close drawing</button>
+                            </div>
+                      </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div style="border: 1px solid #dee2e6;margin-top:20px;padding:10px;font-size:15px !important;">
+                <nav aria-label="Page navigation example" style="display:flex;justify-content: space-between;">
+                    <ul class="pagination justify-content-center mb-1 mt-0" style="align-items: center">
+                        <li class="page-item" >
+                            Items: <span id="item_start">0</span> to <span id="item_end">0</span> of <span id="item_num">0</span>
+                            <select style="margin-left:10px;" id="per_page" onchange="$('#page').val(1);goto();">
+                                <option >5</option>
+                                <option selected>10</option>
+                                <option >20</option>
+                            </select>
+                            <span>per page</span>
+                        </li>
+                    </ul>
+                    <ul class="pagination justify-content-center mb-0 mt-0" style="align-items: center;">
+                        <li class="page-item" >
+                            <button id="btn_prev" type="button" class="btn custom-btn btn-sm" style="padding: 0.25rem 0.5rem;" onclick="goto(-1)" disabled><i class="bi bi-chevron-left"></i>Prev</button>
+                        </li>
+                        <li class="page-item" style="margin: 0 0.25rem;">
+                            <input type="text" id="page" value="1" onchange="goto()" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')" style="width:2.5rem;padding: 0;">
+                            <span style="margin: 0 3px;">of</span>
+                            <span id="page_num">1</span>
+                        </li>
+                        <li class="page-item" >
+                            <button id="btn_next" type="button" class="btn custom-btn btn-sm" style="padding: 0.25rem 0.5rem;" onclick="goto(1)" disabled>Next<i class="bi bi-chevron-right"></i></button>
+                        </li>
+                    </ul>
+                </nav>
+                <div style="overflow: auto;font-size:16px;min-height: 500px;">
+                <table class="table table-bordered table-hover mt-1" >
+                      <thead>
+                        <tr style="white-space: nowrap;">
+                          <th >ID</th><th >Sample</th><th >Site</th>
+                          <th >Taxonomy</th><th >Relative abundance</th><th >Length</th><th >RPKM</th>
+                          <th >Completeness</th><th >Contamination</th><th >GC</th>
+                          <th >N50</th>
+
+                        </tr>
+                      </thead>
+                      <tbody id="divtable">
+                      </tbody>
+                </table>
+                </div>
+            </div>
+        </DIV>
+    </div>
+</div>
+
+{% endblock content %}
+{% block js %}
+
+
+<script src="{% static 'db/js/search.js' %}"></script>
+{% endblock js %}

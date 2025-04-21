@@ -1,0 +1,187 @@
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - {{ MAG.id }} Page</title>
+{% endblock title %}
+
+{% block content %}
+<div class="modal fade" id="sequenceModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sequenceLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="sequenceLabel"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" >
+          <p id="sequence_content" style="font-size: 16px;margin-bottom: 0;word-wrap: break-word;"></p>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="copyButton">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container font-nom"  style="min-height:400px;padding: 10px 30px;">
+    <div class="row">
+        <div class="col-lg-10 col-xs-12">
+            <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+
+                <h1 class="h1_title" >MAG  Report Card</h1>
+                <hr >
+                <div class="section"  id="section_1" style="padding-top:0;">
+                    <div class="row">
+                    <div class="col-lg-6 col-sm-12">
+                        <h1 class="h2_title" >Overview</h1>
+                        <table class="table table-bordered  overview_table" >
+                            <tbody>
+                                <tr><th >ID</th>             <td id="name">{{ MAG.id }}</td></tr>
+                                <tr><th >Source</th>         <td class="sample_td">Site: <a class="project_sample_a" style="display: inline-block;" href="{% url 'db:site' site.id %}">{{ site.id }}</a><br>Sample: <a class="project_sample_a" style="display: inline-block;" href="{% url 'db:sample' sample.id %}">{{ sample.id }}</a>
+                                    <span id="longitude" style="display: none">{{ site.longitude }}</span><span id="latitude" style="display: none">{{ site.latitude }}</span></td></tr>
+                                <tr><th colspan="2" style="background-color: #f1f1f1;font-size: 18px;line-height: 45px;text-align: center;">Taxonomy</th></tr>
+                                <tr><th >Kingdom</th>           <td>{{ MAG.Kingdom }}</td></tr>
+                                <tr><th >Phylum</th>            <td>{{ MAG.Phylum }}</td></tr>
+                                <tr><th >Class</th>             <td>{{ MAG.Class }}</td></tr>
+                                <tr><th >Order</th>             <td>{{ MAG.Order }}</td></tr>
+                                <tr><th >Family</th>            <td>{{ MAG.Family }}</td></tr>
+                                <tr><th >Genus</th>             <td>{{ MAG.Genus }}</td></tr>
+                                <tr><th >Species</th>           <td>{{ MAG.Species }}</td></tr>
+                                <tr><th colspan="2" style="background-color: #f1f1f1;font-size: 18px;line-height: 45px;text-align: center;">Assembly information</th></tr>
+
+                                <tr><th >Relative abundance</th>           <td>{{ MAG.relative_abundance }}</td></tr>
+                                <tr><th >Length</th>         <td>{{ MAG.length }}</td></tr>
+                                <tr><th >RPKM</th>         <td>{{ MAG.RPKM }}</td></tr>
+                                <tr><th >Completeness</th>         <td>{{ MAG.completeness }}</td></tr>
+                                <tr><th >Contamination</th>         <td>{{ MAG.contamination }}</td></tr>
+                                <tr><th >GC</th>         <td>{{ MAG.GC }}</td></tr>
+                                <tr><th >N50</th>         <td>{{ MAG.N50 }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-6 col-sm-12" style="padding-top: 80px;min-height:300px;">
+                        <div style="position:relative;width: 100%;height: 100%;">
+                        <div id="map_div" style=" width: 100%;height:100%;"></div>
+                        <div class="input-title"><p style="margin-bottom:5px;">Location</p></div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <div class="section  mt-5" id="section_2" >
+                    <h2 class="h2_title">Pathway</h2>
+                    <div style="overflow: auto;">
+                        <table class="table table-bordered mt-1">
+                            <thead>
+                                <tr>
+                                    <th >Path ID</th>
+                                    <th >Path name</th>
+                                    <th >Total genes</th>
+                                    <th >Total steps</th>
+                                    <th >Contain genes</th>
+                                    <th >Contain steps</th>
+                                    <th >Percentage of genes</th>
+                                    <th >Percentage of steps</th>
+                                    <th >Visualization</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pathway in pathways %}
+                                <tr id="pathway_inf" style="vertical-align: middle;">
+                                    <td >{{ pathway.module_ID }}</td> <!--<a class="project_sample_a" href="https://www.kegg.jp/kegg-bin/view_ortholog_table?md={{ pathway.module_ID }}" target="_blank"></a>-->
+                                    <td >{{ pathway.name }}</td>
+                                    <td >{{ pathway.total_genes }}</td>
+                                    <td >{{ pathway.total_steps }}</td>
+                                    <td >{{ pathway.genes_number }}</td>
+                                    <td >{{ pathway.steps_number }}</td>
+                                    <td >{{ pathway.genes_percentage|floatformat:2 }}</td>
+                                    <td >{{ pathway.steps_percentage|floatformat:2 }}</td>
+                                    <td class="no-wrap">
+                                        <button class="btn btn-primary btn-sm" data-module-id="{{ pathway.module_ID|escape }}" onclick="displayModule(this)">Display</button>
+                                        <button class="btn btn-primary btn-sm" data-module-id="{{ pathway.module_ID|escape }}" onclick="downloadChart(this)">Download</button>
+                                    </td>
+                                    <td id="{{ pathway.module_ID }}" style="display: none">{{ pathway.genes }}</td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="overflow: auto;width: 100%;"><div id="container" style="height: 650px;min-width: 1200px;"></div></div>
+                </div>
+
+                <div class="section mt-5" id="section_3" >
+                    <h2 class="h2_title">Genes<span class="browse_num">{{ genes|length }}</span></h2>
+                    <div >
+                        <table class="table table-bordered mt-1 display" id="example" >
+                            <thead >
+                                <tr >
+                                    <th >Gene ID</th>
+
+                                    <th >Length</th>
+                                    <th >Sequence</th>
+                                    <th >Annotation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for gene in genes %}
+                                <tr >
+                                    <td style="vertical-align: middle;">{{ gene.id }}</td>
+
+
+                                    <td style="vertical-align: middle;">{{ gene.length }}</td>
+                                    <td style="vertical-align: middle;" class="no-wrap">
+                                        <button type="button"  class="btn btn-primary btn-sm"  onclick="view(this)">View</button>
+                                        <button type="button"  class="btn btn-primary btn-sm"  onclick="download(this)">Download</button>
+                                    </td>
+                                    <td style="vertical-align: middle;" class="no-wrap">
+                                        <button type="button"  class="btn btn-primary btn-sm"  onclick="extend(this)">Extend</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+                <div class="section" id="section_4" >
+                    <h2 class="h2_title mt-3">Download</h2>
+                    <div class="row mt-5">
+                        <div class="col-12 col-lg-6">
+                            <div style="width:100%;text-align: center;margin-bottom: 150px;">
+                                <img src="{% static 'db/images/download.png' %}" alt="fasta" style="margin: 20px 0;">
+                                <p style="font-size: 22px;"><a href="{% static 'db/fasta/' %}{{ MAG.id }}.fasta" download="{{ MAG.id }}_genome.fasta" style="color: #4489c7;">Download</a> the genome file of <span>{{ MAG.id }}</span></p>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <div style="width:100%;text-align: center;margin-bottom: 150px;">
+                                <img src="{% static 'db/images/download_annotation.png' %}" alt="fasta" style="margin: 20px 0;">
+                                <p style="font-size: 22px;"><a href="{% static 'db/annotation/' %}{{ MAG.id }}.annotations" download="{{ MAG.id }}_annotation.annotations" style="color: #4489c7;">Download</a> the annotation file of <span>{{ MAG.id }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-2 d-none d-lg-block pt-4 mt-5 mx-auto" style="padding-right: 0">
+            <div class="slide_div">
+                <div id="list-example" class="list-group">
+                  <a class="list-group-item list-group-item-action" href="#section_1">Overview</a>
+                  <a class="list-group-item list-group-item-action" href="#section_2">Pathway</a>
+                  <a class="list-group-item list-group-item-action" href="#section_3">Genes</a>
+                    <a class="list-group-item list-group-item-action" href="#section_4">Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script>
+    const info ={siteid: '{{ site.id }}',sitename: '{{ site.name }}',sampleid: '{{ sample.id }}', location:'{{ site.location }}',
+    }
+</script>
+ <script src="{% static 'db/js/bin.js' %}"></script>
+
+{% endblock js %}
+

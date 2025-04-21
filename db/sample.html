@@ -1,0 +1,860 @@
+{% extends 'db/base.html' %}
+{% load static %}
+{% block title %}
+<title >RWAMdb - {{ sample.id }} Page</title>
+{% endblock title %}
+
+{% block content %}
+<div class="modal fade" id="resultModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="resultLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="resultLabel"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" >
+          <table class="table table-bordered table-hover mt-1">
+            <thead>
+                <tr style="white-space: nowrap;">
+                  <th >ID</th><th >Sample</th><th >Site</th>
+                  <th >Taxonomy</th><th >Relative abundance</th><th >Length</th><th >RPKM</th>
+                  <th >Completeness</th><th >Contamination</th><th >GC</th><th >N50</th>
+                </tr>
+            </thead>
+            <tbody id="result_body">
+
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="pathModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="pathLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xxl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="pathLabel"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" >
+
+          <table class="table table-bordered table-hover mt-1">
+            <thead>
+                <tr>
+                    <th >Path ID</th>
+                    <th >Path name</th>
+                    <th >Total genes</th>
+                    <th >Total steps</th>
+                    <th >Contain genes</th>
+                    <th >Contain steps</th>
+                    <th >Percentage of genes</th>
+                    <th >Percentage of steps</th>
+
+                </tr>
+            </thead>
+            <tbody id="path_body">
+
+            </tbody>
+          </table>
+          <div id="path_container" style="height: 650px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container font-nom"  style="min-height:400px;padding: 10px 30px;">
+    <div class="row">
+        <div class="col-lg-10 col-xs-12" >
+            <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+                <h1 class="h1_title" >Sample Report Card</h1>
+                <hr id="section_0">
+                <div id="section_1" class="section" style="padding-top:0;">
+                    <div class="row">
+                    <div class="col-lg-7 col-sm-12">
+                        <h2 class="h2_title">Overview</h2>
+                        <table class="table table-bordered mt-1">
+                            <tbody>
+
+                                <tr><th >ID</th>             <td>{{ sample.id }}</td></tr>
+
+                                <tr><th >TC</th>           <td>{{ sample.TC }}</td></tr>
+                                <tr><th >TS</th>         <td>{{ sample.TS }}</td></tr>
+                                <tr><th >TN</th>         <td>{{ sample.TN }}</td></tr>
+                                <tr><th >TP</th>         <td>{{ sample.TP }}</td></tr>
+                                <tr><th >SOC</th>         <td>{{ sample.SOC }}</td></tr>
+                                <tr><th >C/N</th>         <td>{{ sample.C_N }}</td></tr>
+                                <tr><th >IC</th>         <td>{{ sample.IC }}</td></tr>
+                                <tr><th >MBC</th>         <td>{{ sample.MBC }}</td></tr>
+                                <tr><th >pH</th>          <td>{{ sample.pH }}</td></tr>
+                                <tr><th >Water</th>           <td>{{ sample.water }}</td></tr>
+                                <tr><th >NO<sub>3</sub><sup>-</sup></th>         <td>{{ sample.NO3|default_if_none:"" }}</td></tr>
+                                <tr><th >NH<sub>4</sub><sup>+</sup></th>         <td>{{ sample.NH4 }}</td></tr>
+
+
+                                <tr><th >Collection Date</th>  <td>{{ sample.date }}</td></tr>
+
+                                <tr><th >Source</th>        <td ><a class="project_sample_a" href="{% url 'db:site' site.id %}">{{ site.id }}</a>
+                                            <span id="longitude" style="display: none">{{ site.longitude }}</span><span id="latitude" style="display: none">{{ site.latitude }}</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-5 col-sm-12" style="padding-top: 80px;min-height:300px;">
+                        <div style="position:relative;width: 100%;height: 100%;">
+                        <div id="map_div" style=" width: 100%;height:100%;"></div>
+                        <div class="input-title"><p style="margin-bottom:5px;">Location</p></div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div id="section_2" class="section mt-5" >
+                    <h2 class="sample_big_title">Taxonomy Sunburst<span style="font-size: 16px;color: #000;"><br>The taxonomic distribution of MAGs in {{ sample.id }}</span></h2>
+                    <div id="outer_div" style="height: 1500px;min-width:100%;overflow: auto;position: relative;">
+
+                        <div id="sun_container" style="width:98%;height: 1500px;min-width: 1500px;" ></div>
+                    </div>
+
+                </div>
+                <div id="section_3" class="section mt-5" >
+                    <h2 class="sample_big_title">Pathways River<span style="font-size: 16px;color: #000;"><br>The carbon fixation pathway completeness of MAGs in {{ sample.id }}</span></h2>
+
+                    <div  style="height: 1210px;width:100%;overflow: auto;position: relative;">
+
+                        <div id="river_container" style="width:100%;height: 1200px;min-width: 1500px;" ></div>
+                    </div>
+
+                </div>
+                <div id="section_4" class="section mt-5" >
+                    <h2 class="sample_big_title">MAGs<span class="browse_num">{{ MAGs|length }}</span><span style="font-size: 16px;color: #000;"><br>The MAGs in {{ sample.id }}</span></h2>
+                    <div style="overflow: auto;">
+                        <table class="table table-bordered table-hover mt-1" >
+                            <thead>
+                                <tr style="white-space: nowrap;"><th >ID</th>
+                          <th >Taxonomy</th>
+                          <th >Relative abundance</th>
+                          <th >Length</th>
+                          <th >RPKM</th><th >Completeness</th><th >Contamination</th>
+                            <th >GC</th><th >N50</th>
+                          </tr>
+                            </thead>
+
+                            <tbody >
+
+                                {% for bin in MAGs %}
+                                <tr>
+                                    <td ><a class="project_sample_a" href="{% url 'db:bin' bin.id %}">{{ bin.id }}</a></td>
+
+                                    <td >{{ bin.taxonomy }}</td>
+                                    <td >{{ bin.relative_abundance }}</td>
+                                    <td >{{ bin.length }}</td>
+                                    <td >{{ bin.RPKM }}</td>
+                                    <td >{{ bin.completeness }}</td>
+                                    <td >{{ bin.contamination }}</td>
+                                    <td >{{ bin.GC }}</td>
+                                    <td >{{ bin.N50 }}</td>
+
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-2 d-none d-lg-block pt-4 mt-5 mx-auto" style="padding-right: 0">
+            <div class="slide_div">
+                <div id="list-example" class="list-group">
+                  <a class="list-group-item list-group-item-action" href="#section_1">Overview</a>
+                  <a class="list-group-item list-group-item-action" href="#section_2">Taxonomy Sunburst</a>
+                  <a class="list-group-item list-group-item-action" href="#section_3">Pathways River</a>
+                  <a class="list-group-item list-group-item-action" href="#section_4">MAG</a>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script>
+$(function () {
+
+    waitForAMap();
+    $('#sun_container').height($('#sun_container').width());
+    $('#outer_div').height($('#sun_container').height()+5);
+
+    let mags_len = {{ MAGs|length }};
+    if (mags_len>60){
+
+        $('#river_container').width(1500+(mags_len-60)*30);
+    }
+    show_sun();
+    show_river();
+    window.Path_Chart = echarts.init(document.getElementById('path_container'));
+})
+
+
+
+function display(moduleID){
+    const geneDic = {'PRK': 'K00855', 'rbcL': 'K01601', 'rbcS': 'K01602', 'PGK': 'K00927', 'GAPA': 'K05298', 'gap2': 'K00150', 'GAPDH': 'K00134', 'TPI': 'K01803', 'ALDO': 'K01623', 'FBA': 'K01624', 'FBP':'K03841', 'glpX':'K02446',
+    'glpX-SEBP': 'K11532', 'fbp-SEBP': 'K01086', 'E2.2.1.1': 'K00615', 'E3.1.3.37': 'K01100', 'rpiA': 'K01807', 'rpiB': 'K01808', 'rpe': 'K01783',
+    'porA': 'K00169', 'porB': 'K00170', 'porD': 'K00171', 'porC': 'K00172', 'por': 'K03737', 'pps': 'K01007', 'ppdK': 'K01006', 'ppc': 'K01595', 'pycA': 'K01959', 'pycB': 'K01960', 'PC': 'K01958', 'mdh': 'K00024', 'E4.2.1.2A': 'K01676', 'E4.2.1.2B': 'K01679',
+    'E4.2.1.2AA': 'K01677', 'E4.2.1.2AB': 'K01678', 'sdhA': 'K00239', 'sdhB': 'K00240', 'sdhC': 'K00241', 'sdhD': 'K00242', 'frdA': 'K18556', 'frdB': 'K18557', 'frdC': 'K18558', 'frdD': 'K18559', 'frdE': 'K18560', 'sucD': 'K01902', 'sucC': 'K01903', 'korA': 'K00174',
+    'korB': 'K00175', 'korC': 'K00177', 'korD': 'K00176', 'IDH1': 'K00031', 'ACO': 'K01681', 'acnA': 'K27802', 'acnB': 'K01682', 'aclA': 'K15230', 'aclB': 'K15231', 'ccsA': 'K15232', 'ccsB': 'K15233', 'ccl': 'K15234', 'K15038': 'K15038', 'K15017': 'K15017', 'K14465': 'K14465', '4hbl': 'K14467',
+    'K18861': 'K18861', 'K25774': 'K25774', 'abfD': 'K14534', 'K15016': 'K15016', 'ACAT': 'K00626', 'K01964': 'K01964', 'K15037': 'K15037', 'K15036': 'K15036', 'K15039': 'K15039', 'K15018': 'K15018', 'K15019': 'K15019', 'K15020': 'K15020', 'MCEE': 'K05606',
+    'E5.4.99.2A': 'K01848', 'E5.4.99.2B': 'K01849', 'K14466': 'K14466', 'accB': 'K02160', 'accC': 'K01961', 'accA': 'K01962', 'accD': 'K01963', 'mcr': 'K14468', 'K14469': 'K14469', 'K15052': 'K15052', 'MUT': 'K01847', 'smtA1': 'K14471',
+    'smtB': 'K14472', 'mcl': 'K08691', 'mch': 'K14449', 'mct': 'K14470', 'meh': 'K09709', 'cooS': 'K00198', 'fdhA': 'K05299', 'fdhB': 'K15022', 'fdhF': 'K22015', 'hydA2': 'K25123', 'hycB': 'K25124', 'fhs': 'K01938', 'folD': 'K01491', 'fchA': 'K01500', 'metF': 'K00297', 'metV': 'K25007',
+    'rnfC2': 'K25008', 'acsE': 'K15023', 'acsB': 'K14138', 'cdhE': 'K00197', 'cdhD': 'K00194'
+    }
+    console.log(moduleID)
+    const have_genes = $('#hiddenTd').text().trim().split(', ');
+
+    const module_map = {
+        M00165: [
+          { name: 'Step 1', data: 1, genes: ['PRK']},
+          { name: 'Step 2', data: 2, genes: ['rbcL', 'rbcS']},
+          { name: 'Step 3', data: 1, genes: ['PGK'] },
+          { name: 'Step 4', data: 3, genes: ['GAPA', 'gap2','GAPDH']},
+          { name: 'Step 5', data: 1, genes: ['TPI']},
+          { name: 'Step 6', data: 2, genes: ['ALDO', 'FBA']},
+          { name: 'Step 7', data: 4, genes: ['FBP', 'glpX','glpX-SEBP','fbp-SEBP'] },
+          { name: 'Step 8', data: 1, genes: ['E2.2.1.1']},
+          { name: 'Step 9', data: 3, genes: ['E3.1.3.37', 'glpX-SEBP', 'fbp-SEBP']},
+          { name: 'Step 10', data: 2, genes: ['rpiA','rpiB'] },
+          { name: 'Step 11', data: 1, genes: ['rpe']},
+        ],
+        M00173: [
+          { name: 'Step 1', data: 5, genes: ['porA','porB','porD','porC','por']},
+          { name: 'Step 2', data: 6, genes: ['pps','ppdK','ppc','pycA','pycB','PC']},
+          { name: 'Step 3', data: 1, genes: ['mdh'] },
+          { name: 'Step 4', data: 4, genes: ['E4.2.1.2A', 'E4.2.1.2B','E4.2.1.2AA', 'E4.2.1.2AB']},
+          { name: 'Step 5', data: 9, genes: ['sdhA', 'sdhB', 'sdhC','sdhD', 'frdA', 'frdB','frdC', 'frdD', 'frdE']},
+          { name: 'Step 6', data: 2, genes: ['sucD','sucC']},
+          { name: 'Step 7', data: 4, genes: ['korA','korB','korC','korD']},
+          { name: 'Step 8', data: 1, genes: ['IDH1']},
+          { name: 'Step 9', data: 3, genes: ['ACO','acnA','acnB']},
+          { name: 'Step 10', data: 5, genes: ['aclA','aclB','ccsA','ccsB','ccl']},
+        ],
+        M00374: [
+          { name: 'Step 1', data: 4, genes: ['porA','porB','porD','porC']},
+          { name: 'Step 2', data: 1, genes: ['pps']},
+          { name: 'Step 3', data: 1, genes: ['ppc'] },
+          { name: 'Step 4', data: 1, genes: ['mdh']},
+          { name: 'Step 5', data: 2, genes: ['E4.2.1.2AA', 'E4.2.1.2AB']},
+          { name: 'Step 6', data: 4, genes: ['sdhA','sdhB','sdhC','sdhD']},
+          { name: 'Step 7', data: 2, genes: ['sucD','sucC'] },
+          { name: 'Step 8', data: 2, genes: ['K15038', 'K15017']},
+          { name: 'Step 9', data: 1, genes: ['K14465']},
+          { name: 'Step 10', data: 3, genes: ['4hbl','K18861','K25774']},
+          { name: 'Step 11', data: 1, genes: ['abfD']},
+          { name: 'Step 12', data: 1, genes: ['K15016']},
+          { name: 'Step 13', data: 1, genes: ['ACAT']},
+        ],
+        M00375: [
+          { name: 'Step 1', data: 3, genes: ['K01964','K15037','K15036']},
+          { name: 'Step 2', data: 1, genes: ['K15017']},
+          { name: 'Step 3', data: 1, genes: ['K15039'] },
+          { name: 'Step 4', data: 1, genes: ['K15018']},
+          { name: 'Step 5', data: 1, genes: ['K15019']},
+          { name: 'Step 6', data: 1, genes: ['K15020']},
+          { name: 'Step 7', data: 1, genes: ['MCEE']},
+          { name: 'Step 8', data: 2, genes: ['E5.4.99.2A', 'E5.4.99.2B']},
+          { name: 'Step 9', data: 2, genes: ['K15038', 'K15017']},
+          { name: 'Step 10', data: 1, genes: ['K14465']},
+          { name: 'Step 11', data: 3, genes: ['K14466', 'K18861', 'K25774']},
+          { name: 'Step 12', data: 1, genes: ['abfD']},
+          { name: 'Step 13', data: 1, genes: ['K15016']},
+          { name: 'Step 14', data: 1, genes: ['ACAT']},
+        ],
+        M00376: [
+          { name: 'Step 1', data: 4, genes: ['accB','accC','accA','accD']},
+          { name: 'Step 2', data: 1, genes: ['mcr']},
+          { name: 'Step 3', data: 1, genes: ['K14469']},
+          { name: 'Step 4', data: 1, genes: ['K15052']},
+          { name: 'Step 5', data: 1, genes: ['MCEE']},
+          { name: 'Step 6', data: 3, genes: ['MUT', 'E5.4.99.2A', 'E5.4.99.2B']},
+          { name: 'Step 7', data: 2, genes: ['smtA1', 'smtB']},
+          { name: 'Step 8', data: 3, genes: ['sdhA', 'sdhB', 'sdhC']},
+          { name: 'Step 9', data: 1, genes: ['E4.2.1.2B']},
+          { name: 'Step 10', data: 1, genes: ['mcl'] },
+          { name: 'Step 11', data: 1, genes: ['mch']},
+          { name: 'Step 12', data: 1, genes: ['mct']},
+          { name: 'Step 13', data: 1, genes: ['meh']},
+        ],
+        M00377: [
+          { name: 'Step 1', data: 1, genes: ['cooS']},
+          { name: 'Step 2', data: 5, genes: ['fdhA','fdhB','fdhF','hydA2','hycB']},
+          { name: 'Step 3', data: 1, genes: ['fhs']},
+          { name: 'Step 4', data: 2, genes: ['folD', 'fchA']},
+          { name: 'Step 5', data: 3, genes: ['metF', 'metV', 'rnfC2']},
+          { name: 'Step 6', data: 1, genes: ['acsE']},
+          { name: 'Step 7', data: 3, genes: ['acsB','cdhE','cdhD']},
+        ]
+    }
+
+    const id2name= {
+        M00165: 'Reductive pentose phosphate cycle (Calvin cycle)',
+        M00173: 'Reductive citrate cycle (Arnon-Buchanan cycle)',
+        M00374: 'Dicarboxylate-hydroxybutyrate cycle',
+        M00375: 'Hydroxypropionate-hydroxybutylate cycle',
+        M00376: '3-Hydroxypropionate bi-cycle',
+        M00377: 'Reductive acetyl-CoA pathway (Wood-Ljungdahl pathway)',
+    }
+    let steps = module_map[moduleID]
+
+    const colors = generateGradientColors('#66b3ff', '#0f4c81', steps.length);
+    let gene_color = {};
+    steps.forEach((step, index) => {
+        let flag = 0;
+        step.genes.forEach(gene => {
+            if (have_genes.includes(gene)){
+                gene_color[gene] = colors[index];
+                flag = 1;
+            }else{ gene_color[gene] = "#dedede"; }
+        });
+        step.color = flag === 1 ? colors[index] : "#dedede";
+    });
+
+    const option = {
+        title: {
+            left: 'center',
+            text: moduleID+': '+id2name[moduleID],
+            top: "5%",
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: function (params) {
+
+                let tooltipContent = '';
+                if (params.seriesType === 'pie') {
+                    if (params.seriesName === 'Gene') {
+                        // 内圈基因的 tooltip
+                        const geneName = params.name;
+                        const step = steps.filter(step => step.genes.includes(geneName));
+                        let belongs = '';
+                        step.forEach((element, index) => {
+                            belongs = index > 0 ? belongs + ', ' + element.name : belongs + element.name;
+                        });
+                        tooltipContent = `${geneName}<br/>ko: ${geneDic[geneName]}<br/>Belongs to: ${belongs}`;
+                    } else {
+                        // 外圈步骤的 tooltip
+                        const stepName = params.name;
+                        const step = steps.find(step => step.name === stepName);
+                        tooltipContent = `${stepName}<br/>Include: ${step.genes.join(', ')}`;
+                    }
+                }
+                return tooltipContent;
+            }
+        },
+
+        series: [
+            {
+                name: 'Gene',
+                type: 'pie',
+                radius: ['60%', '134%'],
+                center: ['50%', '90%'],
+                startAngle: 180,
+                endAngle: 360,
+                data: steps.flatMap(step =>
+                    step.genes.map(gene => ({
+                        value: 1,
+                        name: gene,
+                        itemStyle: {color: gene_color[gene] === "#dedede" ? "#dedede" : step.color}
+                    }))
+                ),
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                },
+                label: {
+                    show: true,
+                    position: 'inside', // 可以设置为 'outside' 以在外侧显示
+                    formatter: '{b}', // 标签格式
+                    color: '#fff', // 标签颜色
+                    rotate: true,
+                }
+            },
+            {
+                name: 'Pathway step',
+                type: 'pie',
+                radius: ['135%', '155%'],
+                center: ['50%', '90%'],
+                startAngle: 180,
+                endAngle: 360,
+                data: steps.map(step => ({
+                    value: step.data,
+                    name: step.name,
+                    itemStyle: {color: step.color}
+                })),
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                },
+                label: {
+                    show: true,
+                    position: 'inside',
+                    formatter: '{b}', // 标签格式
+                    color: '#fff', // 标签颜色
+
+                }
+
+            }
+        ]
+    };
+
+    Path_Chart.setOption(option);
+    Path_Chart.off('mouseover');
+    Path_Chart.on('mouseover', function (params) {
+      if (params.seriesType === 'pie' && params.dataIndex !== undefined) {
+        const geneName = params.name;
+
+        // 查找属于该基因的步骤
+        steps.forEach((step, index) => {
+          if (step.genes.includes(geneName)) {
+            Path_Chart.dispatchAction({
+              type: 'highlight',
+              seriesIndex: 1, // 外侧步骤饼图的序号
+              dataIndex: index // 对应步骤的序号
+            });
+          }
+        });
+      }
+    });
+
+
+    Path_Chart.on('mouseout', function (params) {
+      if (params.seriesType === 'pie' && params.dataIndex !== undefined) {
+        // 移除高亮
+        Path_Chart.dispatchAction({
+          type: 'downplay',
+          seriesIndex: 1,
+          dataIndex: undefined
+        });
+      }
+    });
+
+    setTimeout(function (){
+        window.onresize = function () {
+            Path_Chart.resize();
+        }
+    },200);
+}
+function generateGradientColors(startColor, endColor, steps) {
+    // 将十六进制颜色转换为 RGB
+    const hexToRgb = (hex) => {
+        hex = hex.replace("#", "");
+        return [
+            parseInt(hex.slice(0, 2), 16), // Red
+            parseInt(hex.slice(2, 4), 16), // Green
+            parseInt(hex.slice(4, 6), 16), // Blue
+        ];
+    };
+
+    // 将 RGB 转换为十六进制颜色
+    const rgbToHex = (r, g, b) => {
+        const toHex = (value) => value.toString(16).padStart(2, "0");
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    };
+
+    const startRGB = hexToRgb(startColor);
+    const endRGB = hexToRgb(endColor);
+    const gradientColors = [];
+
+    for (let i = 0; i < steps; i++) {
+        // 计算插值
+        const r = Math.round(startRGB[0] + (endRGB[0] - startRGB[0]) * (i / (steps - 1)));
+        const g = Math.round(startRGB[1] + (endRGB[1] - startRGB[1]) * (i / (steps - 1)));
+        const b = Math.round(startRGB[2] + (endRGB[2] - startRGB[2]) * (i / (steps - 1)));
+
+        // 转换为十六进制颜色并添加到结果数组
+        gradientColors.push(rgbToHex(r, g, b));
+    }
+
+    return gradientColors;
+}
+
+function show_sun(){
+    let sun_dom = document.getElementById('sun_container');
+
+    let sun_Chart = echarts.init(sun_dom, null, {
+        renderer: 'canvas',
+        useDirtyRect: false
+    });
+
+    let sun_option;
+    $.get(`/static/db/sunburst/{{ sample.id }}.json`, function (data) {
+      sun_Chart.hideLoading();
+      sun_Chart.setOption(
+        (sun_option = {
+              visualMap: {
+                type: 'piecewise', // 使用分段模式
+                orient: 'horizontal',
+                left: 'center',
+                top: 'top',
+                pieces: [
+                    { value: 1, color: '#ff42b3', label: 'Kingdom' },
+                    { value: 2, color: '#d757c0', label: 'Phylum' },
+                    { value: 3, color: '#af6bcc', label: 'Class' },
+                    { value: 4, color: '#8780d9', label: 'Order' },
+                    { value: 5, color: '#5e95e6', label: 'Family' },
+                    { value: 6, color: '#36a9f2', label: 'Genus' },
+                    { value: 7, color: '#0ebeff', label: 'Species' }
+                ],
+                dimension: 1,
+                hoverLink: false,
+              },
+              toolbox: {
+                show: true,
+                  left: 0,
+                    top: 'top', // 设置 toolbox 在顶部
+                feature: {
+                  saveAsImage: {type: "png", name: '{{ sample.id }} MAGs',pixelRatio: 2,}
+                },
+                  itemSize: 20
+              },
+              tooltip: {
+                  trigger: 'item',
+                  triggerOn: 'mousemove',
+                  formatter: function (info) {
+                    const path = info.treePathInfo
+                    ? info.treePathInfo
+                          .map(node => node.name)
+                          .filter(name => name && name.trim() !== '') // 去掉空名称
+                          .join(' > ')
+                    : '';
+                    const value = info.value[0];
+                    return `<div><strong>Taxonomy:</strong> ${path}<br><strong>Number:</strong> ${value}</div>`;
+                  }
+              },
+              series: {
+                type: 'sunburst',
+                nodeClick: 'none',
+                data: [data],
+                radius: [0, '90%'],
+                sort: undefined,
+
+                emphasis: {
+                  focus: 'ancestor'
+                },
+                label: {
+                    color: '#fff', // 设置整个 series 的字体颜色为白色
+
+                  },
+                levels: [
+                    {},
+                  {
+                    r0: '0%',
+                    r: '8%',
+                    itemStyle: {
+                      borderWidth: 2,
+
+                    },
+
+                    label: {
+                      rotate: 'tangential',
+                      color:'#ff42b3',
+                    }
+                  },
+                  {
+                    r0: '8%',
+                    r: '15%',
+                    label: {
+                      align: 'center',
+                        rotate: 'tangential'
+                    },
+
+                  },
+                  {
+                    r0: '15%',
+                    r: '32%',
+                    label: {
+                      align: 'center'
+                    },
+                  },
+                  {
+                    r0: '32%',
+                    r: '45%',
+                    label: {
+                      align: 'center'
+                    },
+                  },
+                  {
+                    r0: '45%',
+                    r: '60%',
+                    label: {
+                      align: 'center'
+                    },
+                  },
+                  {
+                    r0: '60%',
+                    r: '75%',
+                      rotate: true,
+                    label: {
+                      align: 'center'
+                    },
+                  },
+                  {
+                    r0: '75%',
+                    r: '88%',
+                      rotate: true,
+                    label: {
+                      align: 'center'
+                    },
+                  },
+                  {
+                    r0: '88%',
+                    r: '93%',
+                    label: {
+                      rotate: 'tangential',
+                   //   position: 'outside',
+                        align: 'center',
+                        verticalAlign: 'middle',
+                        padding: [0,0,0,0],
+
+                    },
+                    itemStyle: {
+                      borderWidth: 3,
+
+                    }
+                  }
+                ]
+              },
+
+        })
+      );
+    });
+
+    sun_Chart.on('click', function (params) {
+
+        if (params.data && params.data.name) {
+            $(".loading").show();
+
+                const taxname = params.treePathInfo.map(node => node.name);
+                const fullPath = params.treePathInfo
+                    ? params.treePathInfo
+                          .map(node => node.name)
+                          .filter(name => name && name.trim() !== '') // 去掉空名称
+                          .join('$')
+                    : '';
+
+                $.post("/db/browse_search/",
+                {
+                    'fullPath':'sample$'+fullPath,
+                },function(data){
+
+                    let html =  ``;
+                    data.result.forEach(item => {
+                        html += `<tr>
+                            <td ><a class="table_a" href="/db/bin/${item.id}/" target="_blank">${item.id}</a></td>
+                            <td ><a class="table_a" href="/db/sample/${item.sample}/" target="_blank">${item.sample}</a></td>
+                            <td ><a class="table_a" href="/db/site/${item.site}/" target="_blank">${item.site}</a></td>
+                            <td >${item.taxonomy}</td>
+                            <td >${item.relative_abundance}</td>
+                            <td >${item.length}</td>
+                            <td >${item.RPKM}</td>
+                            <td >${item.Completeness}</td>
+                            <td >${item.Contamination}</td>
+                            <td >${item.GC}</td>
+                            <td >${item.N50}</td>
+
+                        </tr>`;
+                    })
+
+                    $('#result_body').html(html);
+                    $('#resultLabel').html(taxname.join('>').slice(1));
+                    $('#resultModel').modal('show');
+                    $(".loading").hide();
+                })
+
+        }
+    });
+
+    sun_Chart.resize();
+    window.addEventListener('resize', sun_Chart.resize);
+}
+
+function show_river(){
+    let river_dom = document.getElementById('river_container');
+
+    let river_Chart = echarts.init(river_dom, null, {
+        renderer: 'canvas',
+        useDirtyRect: false
+    });
+    const path_list = ['M00165', 'M00173', 'M00374', 'M00375', 'M00376', 'M00377']
+    let river_option;
+    $.get(`/static/db/River/{{ sample.id }}.json`, function (data) {
+      var hoveredSeriesName = null;
+
+
+    river_Chart.on('mouseover', function (params) {
+        // 当 tooltip.trigger = 'axis' 时，ECharts 的事件回调可能会返回数组，也可能返回单个对象
+        // 但在大多数情况下，鼠标真正悬停到某个 series 时，params 为单个对象
+        if (params.componentType === 'series') {
+            hoveredSeriesName = params.name;
+        }
+    });
+      river_Chart.hideLoading();
+      river_Chart.setOption(
+        (river_option = {
+              toolbox: {
+                show: true,
+                  left: 0, // 设置 toolbox 水平居中
+                    top: 'top', // 设置 toolbox 在顶部
+                feature: {
+                  saveAsImage: {type: "png", name: '{{ sample.id }} MAGs Sankey',pixelRatio: 2,}
+                },
+                  itemSize: 20
+              },
+              legend: {
+                data:path_list,
+              },
+              tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    // params 是一个数组，每个元素对应一个系列
+                    let html = `<h5 style="font-size: 16px;font-weight: bold;">${params[0].axisValue}</h5>`;
+                    params.forEach(function (item) {
+                        // 判断是否为当前悬停的系列
+
+                        const isHoveredSeries = (item.name === hoveredSeriesName);
+                        // 用 HTML 方式设置字体颜色
+                        const colorStyle = isHoveredSeries ? item.color : '#333';
+
+                        // item.marker 是 ECharts 默认提供的小圆点标记，可以带上
+                        html += `<div style="color:${colorStyle};">
+                                   ${item.marker}${item.name} : ${item.value[1]}
+                                 </div>`;
+                    });
+                    return html;
+                },
+
+              },
+
+             singleAxis: {
+                type: 'category',
+                data: data.mags,  // 横坐标数据
+                max: 'dataMax',
+                axisTick: {alignWithLabel: true, show: false},
+                axisLabel: {rotate: 45, interval: 0, show: true},
+                axisPointer: {animation: true, label: {show: true}},
+                splitLine: {show: true, lineStyle: {type: 'dashed', opacity: 0.8}}
+            },
+            series: [{
+                type: 'themeRiver',
+                emphasis: {
+                    itemStyle: {shadowBlur: 20, shadowColor: 'rgba(0, 0, 0, 0.8)'}
+                },
+                data: data.data,  // 这里的数据需要是 [xIndex, yValue, category]
+                label: {show: false},
+
+            }]
+
+        })
+      );
+
+    });
+    river_Chart.on('click', function (params) {
+        $(".loading").show();
+        let pixel = [params.event.offsetX, params.event.offsetY];
+    // 将点击的像素位置转换为 singleAxis 坐标的值
+        const axisValue = river_Chart.convertFromPixel('singleAxis', pixel);
+        let MAG_id = river_option.singleAxis.data[axisValue];
+        $.post("/db/sample_path/",
+        {
+            'MAG_id':MAG_id,
+            'path': path_list[params.dataIndex],
+        },function(data){
+            let html =  ``;
+            html += `<tr>
+                <td >${data.pathways_data.module_ID}</td>
+                <td >${data.pathways_data.name}</td>
+                <td >${data.pathways_data.total_genes}</td>
+                <td >${data.pathways_data.total_steps}</td>
+                <td >${data.pathways_data.genes_number}</td>
+                <td >${data.pathways_data.steps_number}</td>
+                <td >${data.pathways_data.genes_percentage}</td>
+                <td >${data.pathways_data.steps_percentage}</td>
+                <td id="hiddenTd" style="display: none">${data.pathways_data.genes}</td>
+
+            </tr>`;
+
+            $('#path_body').html(html);
+            $('#pathLabel').html('The '+path_list[params.dataIndex]+' pathway completeness of MAG ('+MAG_id+')');
+            display(path_list[params.dataIndex]);
+            $('#pathModel').on('shown.bs.modal', function () {
+                $(".loading").hide();
+                $("#path_container").width('100%');
+                $("#path_container").height('45vh');
+                Path_Chart.resize();
+            });
+            $('#pathModel').modal('show');
+
+
+        })
+
+    });
+
+    river_Chart.resize();
+
+    window.addEventListener('resize', river_Chart.resize);
+}
+
+function waitForAMap() {
+    let map;
+    if (typeof AMap !== 'undefined') {
+        $(".loading").hide();
+        let infoWindow = new AMap.InfoWindow({offset: new AMap.Pixel(-1, -6)});
+        let latitude = $('#latitude').text();
+        let longitude = $('#longitude').text();
+        map = new AMap.Map('map_div', {
+            lang: "en",
+            viewMode: '2D',
+            zoom: 12,
+            resizeEnable: true,
+            center: [longitude, latitude],
+        });
+        const scaleControl = new AMap.Scale({
+            position: 'LB' // 设置位置：左下角 (Left Bottom)
+        });
+        map.addControl(scaleControl);
+        var markerContent = '<div class="marker marker_active" ></div>';
+        let m = new AMap.Marker({
+            map: map,
+            content: markerContent,
+            position: [longitude, latitude],
+            offset: new AMap.Pixel(-6, -6),
+        });
+
+        m.content = `<div class="infoWindow"><h4>{{ site.id }}</h4><hr><table class="table table-borderless mb-0"><tbody>
+        <tr><th>Name: <th><td>{{ site.name }}</td></tr>
+        <tr><th>Location: <th><td>{{ site.location }}</td></tr>
+        <tr><th>Sample: <th><td><p style="margin-bottom: 5px;">{{ sample.id }}</p></td></tr></tbody></table>`;
+
+        m.on('mouseover', function (e) {
+            infoWindow.setContent(e.target.content);
+            infoWindow.open(map, e.target.getPosition());
+        });
+        m.on('mouseout', function (e) {
+            infoWindow.close();
+        });
+        m.on('click', function (e) {
+            window.open("/db/site/" + info.siteid, "_blank")
+        });
+        console.log('Map load success');
+    } else {
+        // 如果 AMap 未定义，稍后重试
+        setTimeout(waitForAMap, 100);
+    }
+}
+</script>
+{% endblock js %}
+
